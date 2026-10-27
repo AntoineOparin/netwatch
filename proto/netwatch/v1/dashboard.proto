@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package netwatch.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/AntoineOparin/netwatch/gen/netwatch/v1;netwatchv1";
+
+// DashboardService is what the web UI calls on the hub.
+service DashboardService {
+  rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse);
+}
+
+message ListAgentsRequest {}
+
+message ListAgentsResponse {
+  repeated Agent agents = 1;
+}
+
+message Agent {
+  string id = 1;
+  string hostname = 2;
+  string os = 3;
+  string arch = 4;
+  string agent_version = 5;
+  repeated string ips = 6;
+  google.protobuf.Timestamp registered_at = 7;
+  google.protobuf.Timestamp last_seen = 8;
+  // True when the last heartbeat arrived within a few heartbeat intervals.
+  bool online = 9;
+}

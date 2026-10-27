@@ -1,0 +1,11 @@
+.DS_Store
+/bin/
+
+# Web
+/web/node_modules/
+/web/.react-router/
+
+# Built SPA, embedded into the hub binary (see internal/webui)
+/internal/webui/build/*
+!/internal/webui/build/.gitkeep
+/web/build/

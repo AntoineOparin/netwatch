@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package netwatch.v1;
+
+import "google/protobuf/duration.proto";
+
+option go_package = "github.com/AntoineOparin/netwatch/gen/netwatch/v1;netwatchv1";
+
+// AgentService is what agents (one per computer) call on the hub.
+//
+// Lifecycle: an agent calls Register once on startup, then Heartbeat on the
+// interval the hub hands back. If the hub restarts it forgets everyone, so a
+// Heartbeat returns NOT_FOUND and the agent simply registers again.
+service AgentService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+message RegisterRequest {
+  // Stable ID generated once by the agent and persisted on disk, so a
+  // re-register after a restart updates the same entry instead of adding one.
+  string agent_id = 1;
+  string hostname = 2;
+  string os = 3;
+  string arch = 4;
+  string agent_version = 5;
+  // Non-loopback IP addresses of this machine, for display.
+  repeated string ips = 6;
+}
+
+message RegisterResponse {
+  google.protobuf.Duration heartbeat_interval = 1;
+}
+
+message HeartbeatRequest {
+  string agent_id = 1;
+}
+
+message HeartbeatResponse {}
