@@ -118,3 +118,7 @@ cd web && bun run dev     # dashboard with hot reload on :5173, proxied to :8080
 - [x] **M6 Per-app breakdown** (macOS)
 - [ ] Per-app on Windows (ETW, needs admin)
 - [ ] **M7 Whole-LAN bytes**: Raspberry Pi as gateway, real traffic for the Xbox, phones and TV
+
+## License
+
+[MIT](LICENSE)
