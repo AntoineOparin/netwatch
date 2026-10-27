@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Install web dependencies
+        working-directory: web
+        run: bun install --frozen-lockfile
+
+      # Same generator versions as the committed code, so a stale `make gen`
+      # shows up as a diff.
+      - name: Generated code is up to date
+        run: |
+          go install github.com/bufbuild/buf/cmd/buf@v1.75.0
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.12
+          go install connectrpc.com/connect/cmd/protoc-gen-connect-go@v1.21.1
+          make gen
+          git diff --exit-code -- gen web/app/gen
+
+      - name: Tests, vet, lint, typecheck
+        run: make check
+
+      - name: Build the dashboard
+        run: make web
+
+      - name: Cross-compile every platform
+        run: make cross

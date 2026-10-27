@@ -1,79 +1,120 @@
 # NetWatch
 
-> "Is my home internet dropping, and which device is hogging the bandwidth?"
+[![CI](https://github.com/AntoineOparin/netwatch/actions/workflows/ci.yml/badge.svg)](https://github.com/AntoineOparin/netwatch/actions/workflows/ci.yml)
 
-A small home-network monitor I'm building to answer one question: **when my Xbox lags, is it the internet, the Wi-Fi, or someone in the house maxing out the connection?**
+**"Is my home internet dropping, and which device is hogging the bandwidth?"**
 
-- **Agents** run on each computer and report what that machine is doing.
-- **The hub** collects agent reports, probes latency, discovers every device on the LAN, and serves a dashboard.
-
-```
- [agent: my Mac]   [agent: Dad's laptop]       [hub]
-        \________ Connect RPC ________/          |  latency probes, LAN discovery
-                        v                        v
-              ingest -> store -> analysis -> dashboard (React Router SPA, embedded in the hub binary)
-```
+I built NetWatch to answer one question: *when my Xbox lags, is it the Wi-Fi, the internet, or someone in the house maxing out the connection?* It watches the connection from inside the home network, catches lag as it happens, and says what was busy at that moment.
 
 ![A lag incident: internet ping rose to 81 ms while the Mac was uploading 23.5 Mbps](docs/screenshots/m4-incident.png)
 
-![Overview: live latency to the router, the ISP and the internet, with a verdict](docs/screenshots/m2-overview.png)
+## What it tells you
+
+- **Where lag comes from.** It pings the router, the ISP's first router and the internet once a second. If the router is slow too, it's the Wi-Fi. If only the hops past it are slow, it's the connection.
+- **When it happened, and who was busy.** Lag incidents are detected automatically and explained in a sentence: *"Internet ping rose to 81 ms (normally 19 ms). At the same time, Dads-Laptop was uploading up to 23.5 Mbps (mostly OneDrive)."*
+- **Who's using the internet right now:** per computer, and per app on macOS.
+- **Every device on the network**, the Xbox, phones and TV included: name, maker, and how good its Wi-Fi link is.
 
 ![Who's using the internet: per-computer download and upload](docs/screenshots/m3-throughput.png)
 
-## Stack
+## Quick start
 
-- **Go**: agent and hub. Each is a single static binary that cross-compiles to macOS, Windows, Linux and Raspberry Pi.
-- **Connect RPC + protobuf**: a schema-first agent↔hub API (`proto/`). It generates both the Go server/client and the TypeScript client.
-- **SQLite** (pure Go, `modernc.org/sqlite`): time-series storage, with raw samples rolled up into per-minute and per-hour averages.
-- **React Router (SPA mode) + Tailwind**: the dashboard. It's built to static files and embedded into the hub with `go:embed`.
-
-## Running it
-
-Requirements: Go 1.24+ and Bun.
+Download the binaries for your system from **[Releases](https://github.com/AntoineOparin/netwatch/releases)**, or build them (Go 1.24+ and Bun):
 
 ```sh
 cd web && bun install && cd ..
-make            # builds bin/hub (with the dashboard inside) and bin/agent
-
-./bin/hub                                   # dashboard on http://localhost:8080, data in ./netwatch.db
-./bin/agent -hub http://<hub-ip>:8080       # on each computer
+make                                   # bin/hub (dashboard included) and bin/agent
 ```
 
-Development, with UI hot reload:
+Then:
 
 ```sh
-go run ./cmd/hub &                # API on :8080
-cd web && bun run dev             # UI on :5173, proxies RPCs to :8080
+./bin/hub                              # on one machine: dashboard at http://<its-ip>:8080
+./bin/agent -hub http://<hub-ip>:8080  # on each computer you want numbers for
 ```
 
-The hub pings your router, the first ISP hop and 1.1.1.1. Both are detected automatically; override them with `-probe-gateway`, `-probe-isp` (or `off`) and `-probe-internet`. On Linux, unprivileged ping needs `net.ipv4.ping_group_range` to include your group; otherwise run with `-probe-privileged` as root.
+That's it. Open the dashboard from any device on the network, phones included. **[docs/running.md](docs/running.md)** covers which file to download, Windows, starting at log-in, and the macOS and Windows "unverified developer" prompts.
 
-Lag means internet ping more than 30 ms above its normal (median) level; change that with `-lag-rise`.
+## Hub and agents
 
-On macOS the agent also reports which apps are using the network (via `nettop`, no root needed). Windows and Linux would need admin-level tracing, so they show computer totals only for now.
+- **The hub** is the one program you need. Run it on one machine and it measures lag (pings to the router, the ISP and the internet), discovers every device on the network, detects incidents, stores history (SQLite) and serves the dashboard.
+- **An agent** is a small helper you run on each *computer* you want per-computer numbers for. It reads that computer's network counters (and, on macOS, which apps are using the network) and reports them to the hub every 2 seconds. Without agents you still get lag detection and the device list; with them you also learn *who* was busy.
 
-Every minute the hub also sweeps the local network for devices (ARP), names them through the router's DNS, and pings the ones that answer every 5 s. Change the interval with `-sweep-every`, or turn it off with `-sweep-every 0`.
+Consoles, phones and TVs can't run an agent, so they appear in the device list but their traffic isn't measured. See [what it can't see](#what-it-cant-see-yet).
 
-Other targets: `make test`, `make check` (tests + vet + lint + typecheck), `make gen` (after editing `proto/`), `make cross` (agent builds for every OS).
+```mermaid
+flowchart LR
+  subgraph Computers
+    A1["agent<br/>my Mac"]
+    A2["agent<br/>Dad's laptop"]
+  end
+  subgraph Hub
+    P["probes<br/>router · ISP · 1.1.1.1"]
+    D["device discovery<br/>ARP sweep"]
+    S[("SQLite<br/>time series")]
+    I["incident detector"]
+    W["dashboard<br/>(embedded SPA)"]
+  end
+  A1 -- "Connect RPC<br/>every 2 s" --> S
+  A2 --> S
+  P --> S
+  D --> S
+  S --> I --> S
+  S -- "live streams" --> W
+```
+
+## How it works
+
+| Piece | What it does |
+|---|---|
+| **Lag probe** | Hand-written ICMP pinger (no root on macOS). Finds the ISP's first router traceroute-style, by limiting how many routers a ping may cross (TTL) |
+| **Throughput** | Each agent reads its uplink interface's byte counters once a second; the hub corrects for clock differences between computers |
+| **Per-app** (macOS) | `nettop` in delta mode, run under a pseudo-terminal (a pipe made it buffer samples for tens of seconds); processes grouped by their `.app` |
+| **Device discovery** | Pings every address so the OS resolves it with ARP, then reads the ARP table: devices that ignore ping still show up. Maker from the MAC (IEEE OUI), names from the router's DNS |
+| **Storage** | SQLite: raw samples 24 h, per-minute rollups 30 days, per-hour rollups forever |
+| **Incident detector** | Median baseline, median-of-3 smoothing, hysteresis; Wi-Fi vs upstream from the router's ping; suspects by peak upload/download |
+| **Dashboard** | React Router (SPA mode), uPlot charts, live server-streaming RPCs; built into the hub binary with `go:embed` |
+
+**Stack:** Go for the agent and hub (single static binaries, cross-compiled for macOS, Windows, Linux and Raspberry Pi) · Connect RPC + protobuf (schema-first, generated Go and TypeScript clients) · SQLite (pure Go) · React Router, Tailwind and uPlot.
+
+## What I learned
+
+Each milestone has a write-up of the networking and design ideas behind it, with measurements from my own network:
+
+1. [Skeleton](docs/learning/01-skeleton.md): schema-first APIs, heartbeats and soft state, shipping a web UI inside a Go binary
+2. [Lag probe](docs/learning/02-lag-probe.md): ICMP, TTL and how traceroute works, jitter, bufferbloat
+3. [Throughput](docs/learning/03-throughput.md): interface counters, clock skew, time-series rollups
+4. [Lag explainer](docs/learning/04-lag-explainer.md): baselines, hysteresis, correlation vs causation, and what my modem does under load
+5. [Every device on the LAN](docs/learning/05-lan-devices.md): layer 2 vs layer 3, private MAC addresses, why phones answer slowly
+6. [Which app](docs/learning/06-per-app.md): per-process accounting on each OS, and a buffered-pipe bug
+
+## What it can't see (yet)
+
+A computer on a home network only sees its own traffic, and my ISP router (a Fizz/Hitron CODA-4680) has no API for per-device stats. So:
+
+| | Lag | Present on the network | Wi-Fi quality | Its own traffic |
+|---|---|---|---|---|
+| Computers with an agent | ✓ | ✓ | ✓ | ✓ (per app on macOS) |
+| Xbox, phones, TV | ✓ | ✓ | ✓ if it answers ping | ✗ |
+
+When lag hits and no computer with an agent was busy, NetWatch says so and points at the devices it can't measure. Exact traffic for every device needs a vantage point that sees all of it: a Raspberry Pi acting as the gateway, or a router with per-device stats (e.g. OpenWrt). The collector interface is ready for that as one more data source.
+
+## Development
+
+```sh
+go run ./cmd/hub &        # API on :8080
+cd web && bun run dev     # dashboard with hot reload on :5173, proxied to :8080
+```
+
+`make check` runs Go tests (with the race detector), vet, Biome lint, TypeScript typecheck and the web unit tests. `make gen` regenerates code after editing `proto/`, and `make release` builds every platform into `dist/`. CI runs all of it on every push, and pushing a `v*` tag publishes a release.
 
 ## Roadmap
 
-- [x] **M1 Skeleton**: agents register and heartbeat, the hub lists them, and the dashboard is embedded in the binary
-- [x] **M2 Lag probe**: RTT, jitter and loss to the gateway, the ISP and 1.1.1.1 (tells Wi-Fi problems apart from internet problems)
-- [x] **M3 Who's using bandwidth**: per-computer upload/download, stored as a time series
-- [x] **M4 Lag explainer**: when latency spikes, show whose traffic spiked at the same moment
-- [x] **M5 Every device on the LAN**: ARP/mDNS discovery, vendor lookup, the Xbox's own LAN ping
-- [x] **M6 Per-process breakdown**: answers which app is uploading
-- [ ] **M7 Whole-LAN bytes (Raspberry Pi)**: real per-device traffic for consoles, phones and TVs
-
-## Why it can't just see the Xbox's traffic (yet)
-
-A normal computer on a home network only sees its own packets. My ISP router (a Fizz/Hitron CODA-4680) has no API that exposes per-device stats. So until M7:
-
-- Agents measure the computers directly.
-- The hub measures *lag* directly.
-- Consoles, phones and TVs are discovered (M5) and pinged, but their byte counts aren't measured.
-
-The data sources sit behind a pluggable collector interface, so a Pi-based capture source can be added later without touching storage or the UI.
-
-Notes on what each milestone taught me are in [`docs/learning/`](docs/learning).
+- [x] **M1 Skeleton**: agents register and report, the dashboard is embedded in the hub
+- [x] **M2 Lag probe**: RTT, jitter and loss to the router, the ISP and 1.1.1.1
+- [x] **M3 Who's using bandwidth**: per-computer download and upload, stored in SQLite
+- [x] **M4 Lag explainer**: incidents, Wi-Fi vs upstream, and who was busy
+- [x] **M5 Every device on the LAN**: discovery, maker, names, LAN ping
+- [x] **M6 Per-app breakdown** (macOS)
+- [ ] Per-app on Windows (ETW, needs admin)
+- [ ] **M7 Whole-LAN bytes**: Raspberry Pi as gateway, real traffic for the Xbox, phones and TV

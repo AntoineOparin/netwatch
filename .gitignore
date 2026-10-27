@@ -12,3 +12,4 @@
 
 # Hub database (default -db path)
 /netwatch.db*
+/dist/

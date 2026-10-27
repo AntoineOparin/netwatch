@@ -24,6 +24,9 @@ import (
 	"github.com/AntoineOparin/netwatch/internal/webui"
 )
 
+// Set at build time: go build -ldflags "-X main.version=v0.1.0".
+var version = "dev"
+
 func main() {
 	addr := flag.String("addr", ":8080", "listen address")
 	reportInterval := flag.Duration("report-interval", 2*time.Second, "how often agents should report")
@@ -110,7 +113,7 @@ func main() {
 		_ = srv.Shutdown(shutdownCtx)
 	}()
 
-	log.Info("hub listening", "addr", *addr, "db", *dbPath)
+	log.Info("hub listening", "addr", *addr, "db", *dbPath, "version", version)
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Error("hub stopped", "err", err)
 		os.Exit(1)
