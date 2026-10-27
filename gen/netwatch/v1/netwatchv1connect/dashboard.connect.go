@@ -51,6 +51,9 @@ const (
 	// DashboardServiceSetDeviceNicknameProcedure is the fully-qualified name of the DashboardService's
 	// SetDeviceNickname RPC.
 	DashboardServiceSetDeviceNicknameProcedure = "/netwatch.v1.DashboardService/SetDeviceNickname"
+	// DashboardServiceListTopAppsProcedure is the fully-qualified name of the DashboardService's
+	// ListTopApps RPC.
+	DashboardServiceListTopAppsProcedure = "/netwatch.v1.DashboardService/ListTopApps"
 )
 
 // DashboardServiceClient is a client for the netwatch.v1.DashboardService service.
@@ -67,6 +70,8 @@ type DashboardServiceClient interface {
 	ListDevices(context.Context, *connect.Request[v1.ListDevicesRequest]) (*connect.Response[v1.ListDevicesResponse], error)
 	// Give a device a friendly name, e.g. "Xbox". Empty clears it.
 	SetDeviceNickname(context.Context, *connect.Request[v1.SetDeviceNicknameRequest]) (*connect.Response[v1.SetDeviceNicknameResponse], error)
+	// The busiest apps on each computer over the window (macOS agents only).
+	ListTopApps(context.Context, *connect.Request[v1.ListTopAppsRequest]) (*connect.Response[v1.ListTopAppsResponse], error)
 }
 
 // NewDashboardServiceClient constructs a client for the netwatch.v1.DashboardService service. By
@@ -116,6 +121,12 @@ func NewDashboardServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(dashboardServiceMethods.ByName("SetDeviceNickname")),
 			connect.WithClientOptions(opts...),
 		),
+		listTopApps: connect.NewClient[v1.ListTopAppsRequest, v1.ListTopAppsResponse](
+			httpClient,
+			baseURL+DashboardServiceListTopAppsProcedure,
+			connect.WithSchema(dashboardServiceMethods.ByName("ListTopApps")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -127,6 +138,7 @@ type dashboardServiceClient struct {
 	listIncidents     *connect.Client[v1.ListIncidentsRequest, v1.ListIncidentsResponse]
 	listDevices       *connect.Client[v1.ListDevicesRequest, v1.ListDevicesResponse]
 	setDeviceNickname *connect.Client[v1.SetDeviceNicknameRequest, v1.SetDeviceNicknameResponse]
+	listTopApps       *connect.Client[v1.ListTopAppsRequest, v1.ListTopAppsResponse]
 }
 
 // ListAgents calls netwatch.v1.DashboardService.ListAgents.
@@ -159,6 +171,11 @@ func (c *dashboardServiceClient) SetDeviceNickname(ctx context.Context, req *con
 	return c.setDeviceNickname.CallUnary(ctx, req)
 }
 
+// ListTopApps calls netwatch.v1.DashboardService.ListTopApps.
+func (c *dashboardServiceClient) ListTopApps(ctx context.Context, req *connect.Request[v1.ListTopAppsRequest]) (*connect.Response[v1.ListTopAppsResponse], error) {
+	return c.listTopApps.CallUnary(ctx, req)
+}
+
 // DashboardServiceHandler is an implementation of the netwatch.v1.DashboardService service.
 type DashboardServiceHandler interface {
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
@@ -173,6 +190,8 @@ type DashboardServiceHandler interface {
 	ListDevices(context.Context, *connect.Request[v1.ListDevicesRequest]) (*connect.Response[v1.ListDevicesResponse], error)
 	// Give a device a friendly name, e.g. "Xbox". Empty clears it.
 	SetDeviceNickname(context.Context, *connect.Request[v1.SetDeviceNicknameRequest]) (*connect.Response[v1.SetDeviceNicknameResponse], error)
+	// The busiest apps on each computer over the window (macOS agents only).
+	ListTopApps(context.Context, *connect.Request[v1.ListTopAppsRequest]) (*connect.Response[v1.ListTopAppsResponse], error)
 }
 
 // NewDashboardServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -218,6 +237,12 @@ func NewDashboardServiceHandler(svc DashboardServiceHandler, opts ...connect.Han
 		connect.WithSchema(dashboardServiceMethods.ByName("SetDeviceNickname")),
 		connect.WithHandlerOptions(opts...),
 	)
+	dashboardServiceListTopAppsHandler := connect.NewUnaryHandler(
+		DashboardServiceListTopAppsProcedure,
+		svc.ListTopApps,
+		connect.WithSchema(dashboardServiceMethods.ByName("ListTopApps")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/netwatch.v1.DashboardService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DashboardServiceListAgentsProcedure:
@@ -232,6 +257,8 @@ func NewDashboardServiceHandler(svc DashboardServiceHandler, opts ...connect.Han
 			dashboardServiceListDevicesHandler.ServeHTTP(w, r)
 		case DashboardServiceSetDeviceNicknameProcedure:
 			dashboardServiceSetDeviceNicknameHandler.ServeHTTP(w, r)
+		case DashboardServiceListTopAppsProcedure:
+			dashboardServiceListTopAppsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -263,4 +290,8 @@ func (UnimplementedDashboardServiceHandler) ListDevices(context.Context, *connec
 
 func (UnimplementedDashboardServiceHandler) SetDeviceNickname(context.Context, *connect.Request[v1.SetDeviceNicknameRequest]) (*connect.Response[v1.SetDeviceNicknameResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.SetDeviceNickname is not implemented"))
+}
+
+func (UnimplementedDashboardServiceHandler) ListTopApps(context.Context, *connect.Request[v1.ListTopAppsRequest]) (*connect.Response[v1.ListTopAppsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.ListTopApps is not implemented"))
 }

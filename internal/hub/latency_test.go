@@ -20,6 +20,7 @@ import (
 	"github.com/AntoineOparin/netwatch/internal/collector"
 	"github.com/AntoineOparin/netwatch/internal/collector/discovery"
 	"github.com/AntoineOparin/netwatch/internal/collector/hostnet"
+	"github.com/AntoineOparin/netwatch/internal/collector/procnet"
 	"github.com/AntoineOparin/netwatch/internal/devices"
 	"github.com/AntoineOparin/netwatch/internal/incident"
 	"github.com/AntoineOparin/netwatch/internal/series"
@@ -214,5 +215,49 @@ func TestListDevices(t *testing.T) {
 	}
 	if got[1].GetAgentId() != "dads-laptop" {
 		t.Errorf("device at the agent's IP should link to it, got %q", got[1].GetAgentId())
+	}
+}
+
+func TestListTopApps(t *testing.T) {
+	h := newTestHub(t)
+	now := time.Now()
+	chrome := map[string]string{"app": "Google Chrome"}
+	onedrive := map[string]string{"app": "OneDrive"}
+	// Two 2-second samples of Chrome downloading 1 MB/s = 4 MB in the minute;
+	// one of OneDrive uploading 3 MB/s = 6 MB.
+	h.append(t, collector.Sample{Device: "mac", Metric: procnet.MetricRx, Labels: chrome, Value: 1e6, At: now.Add(-10 * time.Second)})
+	h.append(t, collector.Sample{Device: "mac", Metric: procnet.MetricRx, Labels: chrome, Value: 1e6, At: now.Add(-8 * time.Second)})
+	h.append(t, collector.Sample{Device: "mac", Metric: procnet.MetricTx, Labels: onedrive, Value: 3e6, At: now.Add(-6 * time.Second)})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	resp, err := h.dashboard.ListTopApps(ctx, connect.NewRequest(&netwatchv1.ListTopAppsRequest{Window: durationpb.New(time.Minute)}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	apps := resp.Msg.GetApps()
+	if len(apps) != 2 || apps[0].GetApp() != "OneDrive" || apps[1].GetApp() != "Google Chrome" {
+		t.Fatalf("apps = %v, want OneDrive then Chrome", apps)
+	}
+	if got := apps[0].GetAvgUploadBytesPerSec(); got != 6e6/60 {
+		t.Errorf("OneDrive avg upload = %v, want 6 MB over 60 s", got)
+	}
+	if got := apps[1].GetPeakDownloadBytesPerSec(); got != 1e6 {
+		t.Errorf("Chrome peak download = %v, want 1 MB/s", got)
+	}
+}
+
+func TestListTopAppsSkipsChatter(t *testing.T) {
+	h := newTestHub(t)
+	// 2 s at 50 KB/s = 100 KB over a minute: ~1.7 KB/s average, below the floor.
+	h.append(t, collector.Sample{Device: "mac", Metric: procnet.MetricTx, Labels: map[string]string{"app": "apsd"}, Value: 50_000, At: time.Now().Add(-5 * time.Second)})
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	resp, err := h.dashboard.ListTopApps(ctx, connect.NewRequest(&netwatchv1.ListTopAppsRequest{Window: durationpb.New(time.Minute)}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if apps := resp.Msg.GetApps(); len(apps) != 0 {
+		t.Fatalf("apps = %v, want background chatter left out", apps)
 	}
 }

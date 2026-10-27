@@ -12,7 +12,89 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file netwatch/v1/dashboard.proto.
  */
 export const file_netwatch_v1_dashboard: GenFile = /*@__PURE__*/
-  fileDesc("ChtuZXR3YXRjaC92MS9kYXNoYm9hcmQucHJvdG8SC25ldHdhdGNoLnYxIhQKEkxpc3REZXZpY2VzUmVxdWVzdCI+ChNMaXN0RGV2aWNlc1Jlc3BvbnNlEicKB2RldmljZXMYASADKAsyFi5uZXR3YXRjaC52MS5MYW5EZXZpY2Ui9gIKCUxhbkRldmljZRILCgNtYWMYASABKAkSCgoCaXAYAiABKAkSDgoGdmVuZG9yGAMgASgJEhMKC3ByaXZhdGVfbWFjGAQgASgIEhAKCGhvc3RuYW1lGAUgASgJEhAKCG5pY2tuYW1lGAYgASgJEi4KCmZpcnN0X3NlZW4YByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi0KCWxhc3Rfc2VlbhgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDgoGb25saW5lGAkgASgIEhQKDGFuc3dlcnNfcGluZxgKIAEoCBITCgtwaW5nX2F2Z19tcxgLIAEoARIWCg5waW5nX2ppdHRlcl9tcxgMIAEoARIRCglwaW5nX2xvc3MYDSABKAESDQoFcGluZ3MYDiABKAUSEAoIYWdlbnRfaWQYDyABKAkSDgoGaXNfaHViGBAgASgIEhEKCWlzX3JvdXRlchgRIAEoCCI5ChhTZXREZXZpY2VOaWNrbmFtZVJlcXVlc3QSCwoDbWFjGAEgASgJEhAKCG5pY2tuYW1lGAIgASgJIhsKGVNldERldmljZU5pY2tuYW1lUmVzcG9uc2UiQAoUTGlzdEluY2lkZW50c1JlcXVlc3QSKAoFc2luY2UYASABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24iQQoVTGlzdEluY2lkZW50c1Jlc3BvbnNlEigKCWluY2lkZW50cxgBIAMoCzIVLm5ldHdhdGNoLnYxLkluY2lkZW50IowCCghJbmNpZGVudBIKCgJpZBgBIAEoAxIpCgVzdGFydBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASJwoDZW5kGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCghsb2NhdGlvbhgEIAEoDjIdLm5ldHdhdGNoLnYxLkluY2lkZW50TG9jYXRpb24SEwoLYmFzZWxpbmVfbXMYBSABKAESDwoHcGVha19tcxgGIAEoARISCgpsb3N0X3BpbmdzGAcgASgFEg0KBXBpbmdzGAggASgFEiYKCHN1c3BlY3RzGAkgAygLMhQubmV0d2F0Y2gudjEuU3VzcGVjdCJjCgdTdXNwZWN0EhAKCGFnZW50X2lkGAEgASgJEiEKGXBlYWtfdXBsb2FkX2J5dGVzX3Blcl9zZWMYAiABKAESIwobcGVha19kb3dubG9hZF9ieXRlc19wZXJfc2VjGAMgASgBIkQKFldhdGNoVGhyb3VnaHB1dFJlcXVlc3QSKgoHaGlzdG9yeRgBIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbiJHChdXYXRjaFRocm91Z2hwdXRSZXNwb25zZRIsCgZwb2ludHMYASADKAsyHC5uZXR3YXRjaC52MS5UaHJvdWdocHV0UG9pbnQioAEKD1Rocm91Z2hwdXRQb2ludBIQCghhZ2VudF9pZBgBIAEoCRIpCglkaXJlY3Rpb24YAiABKA4yFi5uZXR3YXRjaC52MS5EaXJlY3Rpb24SJgoCYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhUKDWJ5dGVzX3Blcl9zZWMYBCABKAESEQoJaW50ZXJmYWNlGAUgASgJIkEKE1dhdGNoTGF0ZW5jeVJlcXVlc3QSKgoHaGlzdG9yeRgBIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbiJBChRXYXRjaExhdGVuY3lSZXNwb25zZRIpCgZwb2ludHMYASADKAsyGS5uZXR3YXRjaC52MS5MYXRlbmN5UG9pbnQijgEKDExhdGVuY3lQb2ludBIqCgZ0YXJnZXQYASABKA4yGi5uZXR3YXRjaC52MS5MYXRlbmN5VGFyZ2V0EgwKBGFkZHIYAiABKAkSJgoCYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBnJ0dF9tcxgEIAEoARIMCgRsb3N0GAUgASgIIhMKEUxpc3RBZ2VudHNSZXF1ZXN0IjgKEkxpc3RBZ2VudHNSZXNwb25zZRIiCgZhZ2VudHMYASADKAsyEi5uZXR3YXRjaC52MS5BZ2VudCLVAQoFQWdlbnQSCgoCaWQYASABKAkSEAoIaG9zdG5hbWUYAiABKAkSCgoCb3MYAyABKAkSDAoEYXJjaBgEIAEoCRIVCg1hZ2VudF92ZXJzaW9uGAUgASgJEgsKA2lwcxgGIAMoCRIxCg1yZWdpc3RlcmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBItCglsYXN0X3NlZW4YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBm9ubGluZRgJIAEoCCpyChBJbmNpZGVudExvY2F0aW9uEiEKHUlOQ0lERU5UX0xPQ0FUSU9OX1VOU1BFQ0lGSUVEEAASGwoXSU5DSURFTlRfTE9DQVRJT05fTE9DQUwQARIeChpJTkNJREVOVF9MT0NBVElPTl9VUFNUUkVBTRACKlQKCURpcmVjdGlvbhIZChVESVJFQ1RJT05fVU5TUEVDSUZJRUQQABIWChJESVJFQ1RJT05fRE9XTkxPQUQQARIUChBESVJFQ1RJT05fVVBMT0FEEAIqgAEKDUxhdGVuY3lUYXJnZXQSHgoaTEFURU5DWV9UQVJHRVRfVU5TUEVDSUZJRUQQABIaChZMQVRFTkNZX1RBUkdFVF9HQVRFV0FZEAESFgoSTEFURU5DWV9UQVJHRVRfSVNQEAISGwoXTEFURU5DWV9UQVJHRVRfSU5URVJORVQQAzKmBAoQRGFzaGJvYXJkU2VydmljZRJNCgpMaXN0QWdlbnRzEh4ubmV0d2F0Y2gudjEuTGlzdEFnZW50c1JlcXVlc3QaHy5uZXR3YXRjaC52MS5MaXN0QWdlbnRzUmVzcG9uc2USVQoMV2F0Y2hMYXRlbmN5EiAubmV0d2F0Y2gudjEuV2F0Y2hMYXRlbmN5UmVxdWVzdBohLm5ldHdhdGNoLnYxLldhdGNoTGF0ZW5jeVJlc3BvbnNlMAESXgoPV2F0Y2hUaHJvdWdocHV0EiMubmV0d2F0Y2gudjEuV2F0Y2hUaHJvdWdocHV0UmVxdWVzdBokLm5ldHdhdGNoLnYxLldhdGNoVGhyb3VnaHB1dFJlc3BvbnNlMAESVgoNTGlzdEluY2lkZW50cxIhLm5ldHdhdGNoLnYxLkxpc3RJbmNpZGVudHNSZXF1ZXN0GiIubmV0d2F0Y2gudjEuTGlzdEluY2lkZW50c1Jlc3BvbnNlElAKC0xpc3REZXZpY2VzEh8ubmV0d2F0Y2gudjEuTGlzdERldmljZXNSZXF1ZXN0GiAubmV0d2F0Y2gudjEuTGlzdERldmljZXNSZXNwb25zZRJiChFTZXREZXZpY2VOaWNrbmFtZRIlLm5ldHdhdGNoLnYxLlNldERldmljZU5pY2tuYW1lUmVxdWVzdBomLm5ldHdhdGNoLnYxLlNldERldmljZU5pY2tuYW1lUmVzcG9uc2VCPlo8Z2l0aHViLmNvbS9BbnRvaW5lT3BhcmluL25ldHdhdGNoL2dlbi9uZXR3YXRjaC92MTtuZXR3YXRjaHYxYgZwcm90bzM", [file_google_protobuf_duration, file_google_protobuf_timestamp]);
+  fileDesc("ChtuZXR3YXRjaC92MS9kYXNoYm9hcmQucHJvdG8SC25ldHdhdGNoLnYxIj8KEkxpc3RUb3BBcHBzUmVxdWVzdBIpCgZ3aW5kb3cYASABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24iOgoTTGlzdFRvcEFwcHNSZXNwb25zZRIjCgRhcHBzGAEgAygLMhUubmV0d2F0Y2gudjEuQXBwVXNhZ2UitwEKCEFwcFVzYWdlEhAKCGFnZW50X2lkGAEgASgJEgsKA2FwcBgCIAEoCRIiChphdmdfZG93bmxvYWRfYnl0ZXNfcGVyX3NlYxgDIAEoARIgChhhdmdfdXBsb2FkX2J5dGVzX3Blcl9zZWMYBCABKAESIwobcGVha19kb3dubG9hZF9ieXRlc19wZXJfc2VjGAUgASgBEiEKGXBlYWtfdXBsb2FkX2J5dGVzX3Blcl9zZWMYBiABKAEiFAoSTGlzdERldmljZXNSZXF1ZXN0Ij4KE0xpc3REZXZpY2VzUmVzcG9uc2USJwoHZGV2aWNlcxgBIAMoCzIWLm5ldHdhdGNoLnYxLkxhbkRldmljZSL2AgoJTGFuRGV2aWNlEgsKA21hYxgBIAEoCRIKCgJpcBgCIAEoCRIOCgZ2ZW5kb3IYAyABKAkSEwoLcHJpdmF0ZV9tYWMYBCABKAgSEAoIaG9zdG5hbWUYBSABKAkSEAoIbmlja25hbWUYBiABKAkSLgoKZmlyc3Rfc2VlbhgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoJbGFzdF9zZWVuGAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZvbmxpbmUYCSABKAgSFAoMYW5zd2Vyc19waW5nGAogASgIEhMKC3BpbmdfYXZnX21zGAsgASgBEhYKDnBpbmdfaml0dGVyX21zGAwgASgBEhEKCXBpbmdfbG9zcxgNIAEoARINCgVwaW5ncxgOIAEoBRIQCghhZ2VudF9pZBgPIAEoCRIOCgZpc19odWIYECABKAgSEQoJaXNfcm91dGVyGBEgASgIIjkKGFNldERldmljZU5pY2tuYW1lUmVxdWVzdBILCgNtYWMYASABKAkSEAoIbmlja25hbWUYAiABKAkiGwoZU2V0RGV2aWNlTmlja25hbWVSZXNwb25zZSJAChRMaXN0SW5jaWRlbnRzUmVxdWVzdBIoCgVzaW5jZRgBIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbiJBChVMaXN0SW5jaWRlbnRzUmVzcG9uc2USKAoJaW5jaWRlbnRzGAEgAygLMhUubmV0d2F0Y2gudjEuSW5jaWRlbnQijAIKCEluY2lkZW50EgoKAmlkGAEgASgDEikKBXN0YXJ0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBInCgNlbmQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KCGxvY2F0aW9uGAQgASgOMh0ubmV0d2F0Y2gudjEuSW5jaWRlbnRMb2NhdGlvbhITCgtiYXNlbGluZV9tcxgFIAEoARIPCgdwZWFrX21zGAYgASgBEhIKCmxvc3RfcGluZ3MYByABKAUSDQoFcGluZ3MYCCABKAUSJgoIc3VzcGVjdHMYCSADKAsyFC5uZXR3YXRjaC52MS5TdXNwZWN0InQKB1N1c3BlY3QSEAoIYWdlbnRfaWQYASABKAkSIQoZcGVha191cGxvYWRfYnl0ZXNfcGVyX3NlYxgCIAEoARIjChtwZWFrX2Rvd25sb2FkX2J5dGVzX3Blcl9zZWMYAyABKAESDwoHdG9wX2FwcBgEIAEoCSJEChZXYXRjaFRocm91Z2hwdXRSZXF1ZXN0EioKB2hpc3RvcnkYASABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24iRwoXV2F0Y2hUaHJvdWdocHV0UmVzcG9uc2USLAoGcG9pbnRzGAEgAygLMhwubmV0d2F0Y2gudjEuVGhyb3VnaHB1dFBvaW50IqABCg9UaHJvdWdocHV0UG9pbnQSEAoIYWdlbnRfaWQYASABKAkSKQoJZGlyZWN0aW9uGAIgASgOMhYubmV0d2F0Y2gudjEuRGlyZWN0aW9uEiYKAmF0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIVCg1ieXRlc19wZXJfc2VjGAQgASgBEhEKCWludGVyZmFjZRgFIAEoCSJBChNXYXRjaExhdGVuY3lSZXF1ZXN0EioKB2hpc3RvcnkYASABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24iQQoUV2F0Y2hMYXRlbmN5UmVzcG9uc2USKQoGcG9pbnRzGAEgAygLMhkubmV0d2F0Y2gudjEuTGF0ZW5jeVBvaW50Io4BCgxMYXRlbmN5UG9pbnQSKgoGdGFyZ2V0GAEgASgOMhoubmV0d2F0Y2gudjEuTGF0ZW5jeVRhcmdldBIMCgRhZGRyGAIgASgJEiYKAmF0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZydHRfbXMYBCABKAESDAoEbG9zdBgFIAEoCCITChFMaXN0QWdlbnRzUmVxdWVzdCI4ChJMaXN0QWdlbnRzUmVzcG9uc2USIgoGYWdlbnRzGAEgAygLMhIubmV0d2F0Y2gudjEuQWdlbnQi1QEKBUFnZW50EgoKAmlkGAEgASgJEhAKCGhvc3RuYW1lGAIgASgJEgoKAm9zGAMgASgJEgwKBGFyY2gYBCABKAkSFQoNYWdlbnRfdmVyc2lvbhgFIAEoCRILCgNpcHMYBiADKAkSMQoNcmVnaXN0ZXJlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoJbGFzdF9zZWVuGAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZvbmxpbmUYCSABKAgqcgoQSW5jaWRlbnRMb2NhdGlvbhIhCh1JTkNJREVOVF9MT0NBVElPTl9VTlNQRUNJRklFRBAAEhsKF0lOQ0lERU5UX0xPQ0FUSU9OX0xPQ0FMEAESHgoaSU5DSURFTlRfTE9DQVRJT05fVVBTVFJFQU0QAipUCglEaXJlY3Rpb24SGQoVRElSRUNUSU9OX1VOU1BFQ0lGSUVEEAASFgoSRElSRUNUSU9OX0RPV05MT0FEEAESFAoQRElSRUNUSU9OX1VQTE9BRBACKoABCg1MYXRlbmN5VGFyZ2V0Eh4KGkxBVEVOQ1lfVEFSR0VUX1VOU1BFQ0lGSUVEEAASGgoWTEFURU5DWV9UQVJHRVRfR0FURVdBWRABEhYKEkxBVEVOQ1lfVEFSR0VUX0lTUBACEhsKF0xBVEVOQ1lfVEFSR0VUX0lOVEVSTkVUEAMy+AQKEERhc2hib2FyZFNlcnZpY2USTQoKTGlzdEFnZW50cxIeLm5ldHdhdGNoLnYxLkxpc3RBZ2VudHNSZXF1ZXN0Gh8ubmV0d2F0Y2gudjEuTGlzdEFnZW50c1Jlc3BvbnNlElUKDFdhdGNoTGF0ZW5jeRIgLm5ldHdhdGNoLnYxLldhdGNoTGF0ZW5jeVJlcXVlc3QaIS5uZXR3YXRjaC52MS5XYXRjaExhdGVuY3lSZXNwb25zZTABEl4KD1dhdGNoVGhyb3VnaHB1dBIjLm5ldHdhdGNoLnYxLldhdGNoVGhyb3VnaHB1dFJlcXVlc3QaJC5uZXR3YXRjaC52MS5XYXRjaFRocm91Z2hwdXRSZXNwb25zZTABElYKDUxpc3RJbmNpZGVudHMSIS5uZXR3YXRjaC52MS5MaXN0SW5jaWRlbnRzUmVxdWVzdBoiLm5ldHdhdGNoLnYxLkxpc3RJbmNpZGVudHNSZXNwb25zZRJQCgtMaXN0RGV2aWNlcxIfLm5ldHdhdGNoLnYxLkxpc3REZXZpY2VzUmVxdWVzdBogLm5ldHdhdGNoLnYxLkxpc3REZXZpY2VzUmVzcG9uc2USYgoRU2V0RGV2aWNlTmlja25hbWUSJS5uZXR3YXRjaC52MS5TZXREZXZpY2VOaWNrbmFtZVJlcXVlc3QaJi5uZXR3YXRjaC52MS5TZXREZXZpY2VOaWNrbmFtZVJlc3BvbnNlElAKC0xpc3RUb3BBcHBzEh8ubmV0d2F0Y2gudjEuTGlzdFRvcEFwcHNSZXF1ZXN0GiAubmV0d2F0Y2gudjEuTGlzdFRvcEFwcHNSZXNwb25zZUI+WjxnaXRodWIuY29tL0FudG9pbmVPcGFyaW4vbmV0d2F0Y2gvZ2VuL25ldHdhdGNoL3YxO25ldHdhdGNodjFiBnByb3RvMw", [file_google_protobuf_duration, file_google_protobuf_timestamp]);
+
+/**
+ * @generated from message netwatch.v1.ListTopAppsRequest
+ */
+export type ListTopAppsRequest = Message<"netwatch.v1.ListTopAppsRequest"> & {
+  /**
+   * @generated from field: google.protobuf.Duration window = 1;
+   */
+  window?: Duration | undefined;
+};
+
+/**
+ * Describes the message netwatch.v1.ListTopAppsRequest.
+ * Use `create(ListTopAppsRequestSchema)` to create a new message.
+ */
+export const ListTopAppsRequestSchema: GenMessage<ListTopAppsRequest> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 0);
+
+/**
+ * @generated from message netwatch.v1.ListTopAppsResponse
+ */
+export type ListTopAppsResponse = Message<"netwatch.v1.ListTopAppsResponse"> & {
+  /**
+   * Busiest first within each agent.
+   *
+   * @generated from field: repeated netwatch.v1.AppUsage apps = 1;
+   */
+  apps: AppUsage[];
+};
+
+/**
+ * Describes the message netwatch.v1.ListTopAppsResponse.
+ * Use `create(ListTopAppsResponseSchema)` to create a new message.
+ */
+export const ListTopAppsResponseSchema: GenMessage<ListTopAppsResponse> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 1);
+
+/**
+ * @generated from message netwatch.v1.AppUsage
+ */
+export type AppUsage = Message<"netwatch.v1.AppUsage"> & {
+  /**
+   * @generated from field: string agent_id = 1;
+   */
+  agentId: string;
+
+  /**
+   * e.g. "Google Chrome", "OneDrive", "curl".
+   *
+   * @generated from field: string app = 2;
+   */
+  app: string;
+
+  /**
+   * Averages over the whole window (idle time counts as zero).
+   *
+   * @generated from field: double avg_download_bytes_per_sec = 3;
+   */
+  avgDownloadBytesPerSec: number;
+
+  /**
+   * @generated from field: double avg_upload_bytes_per_sec = 4;
+   */
+  avgUploadBytesPerSec: number;
+
+  /**
+   * @generated from field: double peak_download_bytes_per_sec = 5;
+   */
+  peakDownloadBytesPerSec: number;
+
+  /**
+   * @generated from field: double peak_upload_bytes_per_sec = 6;
+   */
+  peakUploadBytesPerSec: number;
+};
+
+/**
+ * Describes the message netwatch.v1.AppUsage.
+ * Use `create(AppUsageSchema)` to create a new message.
+ */
+export const AppUsageSchema: GenMessage<AppUsage> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 2);
 
 /**
  * @generated from message netwatch.v1.ListDevicesRequest
@@ -25,7 +107,7 @@ export type ListDevicesRequest = Message<"netwatch.v1.ListDevicesRequest"> & {
  * Use `create(ListDevicesRequestSchema)` to create a new message.
  */
 export const ListDevicesRequestSchema: GenMessage<ListDevicesRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 0);
+  messageDesc(file_netwatch_v1_dashboard, 3);
 
 /**
  * @generated from message netwatch.v1.ListDevicesResponse
@@ -42,7 +124,7 @@ export type ListDevicesResponse = Message<"netwatch.v1.ListDevicesResponse"> & {
  * Use `create(ListDevicesResponseSchema)` to create a new message.
  */
 export const ListDevicesResponseSchema: GenMessage<ListDevicesResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 1);
+  messageDesc(file_netwatch_v1_dashboard, 4);
 
 /**
  * @generated from message netwatch.v1.LanDevice
@@ -161,7 +243,7 @@ export type LanDevice = Message<"netwatch.v1.LanDevice"> & {
  * Use `create(LanDeviceSchema)` to create a new message.
  */
 export const LanDeviceSchema: GenMessage<LanDevice> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 2);
+  messageDesc(file_netwatch_v1_dashboard, 5);
 
 /**
  * @generated from message netwatch.v1.SetDeviceNicknameRequest
@@ -183,7 +265,7 @@ export type SetDeviceNicknameRequest = Message<"netwatch.v1.SetDeviceNicknameReq
  * Use `create(SetDeviceNicknameRequestSchema)` to create a new message.
  */
 export const SetDeviceNicknameRequestSchema: GenMessage<SetDeviceNicknameRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 3);
+  messageDesc(file_netwatch_v1_dashboard, 6);
 
 /**
  * @generated from message netwatch.v1.SetDeviceNicknameResponse
@@ -196,7 +278,7 @@ export type SetDeviceNicknameResponse = Message<"netwatch.v1.SetDeviceNicknameRe
  * Use `create(SetDeviceNicknameResponseSchema)` to create a new message.
  */
 export const SetDeviceNicknameResponseSchema: GenMessage<SetDeviceNicknameResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 4);
+  messageDesc(file_netwatch_v1_dashboard, 7);
 
 /**
  * @generated from message netwatch.v1.ListIncidentsRequest
@@ -213,7 +295,7 @@ export type ListIncidentsRequest = Message<"netwatch.v1.ListIncidentsRequest"> &
  * Use `create(ListIncidentsRequestSchema)` to create a new message.
  */
 export const ListIncidentsRequestSchema: GenMessage<ListIncidentsRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 5);
+  messageDesc(file_netwatch_v1_dashboard, 8);
 
 /**
  * @generated from message netwatch.v1.ListIncidentsResponse
@@ -230,7 +312,7 @@ export type ListIncidentsResponse = Message<"netwatch.v1.ListIncidentsResponse">
  * Use `create(ListIncidentsResponseSchema)` to create a new message.
  */
 export const ListIncidentsResponseSchema: GenMessage<ListIncidentsResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 6);
+  messageDesc(file_netwatch_v1_dashboard, 9);
 
 /**
  * A stretch of time when internet pings were much slower than usual, or
@@ -296,7 +378,7 @@ export type Incident = Message<"netwatch.v1.Incident"> & {
  * Use `create(IncidentSchema)` to create a new message.
  */
 export const IncidentSchema: GenMessage<Incident> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 7);
+  messageDesc(file_netwatch_v1_dashboard, 10);
 
 /**
  * @generated from message netwatch.v1.Suspect
@@ -318,6 +400,14 @@ export type Suspect = Message<"netwatch.v1.Suspect"> & {
    * @generated from field: double peak_download_bytes_per_sec = 3;
    */
   peakDownloadBytesPerSec: number;
+
+  /**
+   * The app on that computer that moved the most data in the suspect's
+   * busy direction, when the agent can tell (macOS).
+   *
+   * @generated from field: string top_app = 4;
+   */
+  topApp: string;
 };
 
 /**
@@ -325,7 +415,7 @@ export type Suspect = Message<"netwatch.v1.Suspect"> & {
  * Use `create(SuspectSchema)` to create a new message.
  */
 export const SuspectSchema: GenMessage<Suspect> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 8);
+  messageDesc(file_netwatch_v1_dashboard, 11);
 
 /**
  * @generated from message netwatch.v1.WatchThroughputRequest
@@ -342,7 +432,7 @@ export type WatchThroughputRequest = Message<"netwatch.v1.WatchThroughputRequest
  * Use `create(WatchThroughputRequestSchema)` to create a new message.
  */
 export const WatchThroughputRequestSchema: GenMessage<WatchThroughputRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 9);
+  messageDesc(file_netwatch_v1_dashboard, 12);
 
 /**
  * @generated from message netwatch.v1.WatchThroughputResponse
@@ -359,7 +449,7 @@ export type WatchThroughputResponse = Message<"netwatch.v1.WatchThroughputRespon
  * Use `create(WatchThroughputResponseSchema)` to create a new message.
  */
 export const WatchThroughputResponseSchema: GenMessage<WatchThroughputResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 10);
+  messageDesc(file_netwatch_v1_dashboard, 13);
 
 /**
  * @generated from message netwatch.v1.ThroughputPoint
@@ -398,7 +488,7 @@ export type ThroughputPoint = Message<"netwatch.v1.ThroughputPoint"> & {
  * Use `create(ThroughputPointSchema)` to create a new message.
  */
 export const ThroughputPointSchema: GenMessage<ThroughputPoint> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 11);
+  messageDesc(file_netwatch_v1_dashboard, 14);
 
 /**
  * @generated from message netwatch.v1.WatchLatencyRequest
@@ -415,7 +505,7 @@ export type WatchLatencyRequest = Message<"netwatch.v1.WatchLatencyRequest"> & {
  * Use `create(WatchLatencyRequestSchema)` to create a new message.
  */
 export const WatchLatencyRequestSchema: GenMessage<WatchLatencyRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 12);
+  messageDesc(file_netwatch_v1_dashboard, 15);
 
 /**
  * @generated from message netwatch.v1.WatchLatencyResponse
@@ -432,7 +522,7 @@ export type WatchLatencyResponse = Message<"netwatch.v1.WatchLatencyResponse"> &
  * Use `create(WatchLatencyResponseSchema)` to create a new message.
  */
 export const WatchLatencyResponseSchema: GenMessage<WatchLatencyResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 13);
+  messageDesc(file_netwatch_v1_dashboard, 16);
 
 /**
  * @generated from message netwatch.v1.LatencyPoint
@@ -471,7 +561,7 @@ export type LatencyPoint = Message<"netwatch.v1.LatencyPoint"> & {
  * Use `create(LatencyPointSchema)` to create a new message.
  */
 export const LatencyPointSchema: GenMessage<LatencyPoint> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 14);
+  messageDesc(file_netwatch_v1_dashboard, 17);
 
 /**
  * @generated from message netwatch.v1.ListAgentsRequest
@@ -484,7 +574,7 @@ export type ListAgentsRequest = Message<"netwatch.v1.ListAgentsRequest"> & {
  * Use `create(ListAgentsRequestSchema)` to create a new message.
  */
 export const ListAgentsRequestSchema: GenMessage<ListAgentsRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 15);
+  messageDesc(file_netwatch_v1_dashboard, 18);
 
 /**
  * @generated from message netwatch.v1.ListAgentsResponse
@@ -501,7 +591,7 @@ export type ListAgentsResponse = Message<"netwatch.v1.ListAgentsResponse"> & {
  * Use `create(ListAgentsResponseSchema)` to create a new message.
  */
 export const ListAgentsResponseSchema: GenMessage<ListAgentsResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 16);
+  messageDesc(file_netwatch_v1_dashboard, 19);
 
 /**
  * @generated from message netwatch.v1.Agent
@@ -560,7 +650,7 @@ export type Agent = Message<"netwatch.v1.Agent"> & {
  * Use `create(AgentSchema)` to create a new message.
  */
 export const AgentSchema: GenMessage<Agent> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 17);
+  messageDesc(file_netwatch_v1_dashboard, 20);
 
 /**
  * Where a lag incident came from.
@@ -723,6 +813,16 @@ export const DashboardService: GenService<{
     methodKind: "unary";
     input: typeof SetDeviceNicknameRequestSchema;
     output: typeof SetDeviceNicknameResponseSchema;
+  },
+  /**
+   * The busiest apps on each computer over the window (macOS agents only).
+   *
+   * @generated from rpc netwatch.v1.DashboardService.ListTopApps
+   */
+  listTopApps: {
+    methodKind: "unary";
+    input: typeof ListTopAppsRequestSchema;
+    output: typeof ListTopAppsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_netwatch_v1_dashboard, 0);

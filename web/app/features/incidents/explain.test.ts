@@ -30,6 +30,7 @@ describe("explain", () => {
           create(SuspectSchema, {
             agentId: "dad",
             peakUploadBytesPerSec: 1_175_000,
+            topApp: "OneDrive",
           }),
         ],
       }),
@@ -39,7 +40,7 @@ describe("explain", () => {
     expect(e.duration).toBe("23 s");
     expect(e.headline).toBe("Internet ping rose to 181 ms (normally 18 ms).");
     expect(e.cause).toStartWith(
-      "At the same time, Dads-Laptop was uploading up to 9.4 Mbps.",
+      "At the same time, Dads-Laptop was uploading up to 9.4 Mbps (mostly OneDrive).",
     );
     expect(e.cause).toContain("bufferbloat");
   });

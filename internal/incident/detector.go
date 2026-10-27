@@ -10,11 +10,13 @@ import (
 	"cmp"
 	"math"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/AntoineOparin/netwatch/internal/collector"
 	"github.com/AntoineOparin/netwatch/internal/collector/hostnet"
 	"github.com/AntoineOparin/netwatch/internal/collector/probe"
+	"github.com/AntoineOparin/netwatch/internal/collector/procnet"
 )
 
 type Location int
@@ -34,6 +36,9 @@ type Suspect struct {
 	Device      string  `json:"device"`
 	PeakUpBps   float64 `json:"peak_up_bps"`
 	PeakDownBps float64 `json:"peak_down_bps"`
+	// The app that moved the most data in the suspect's busy direction,
+	// if the agent reports apps (macOS).
+	TopApp string `json:"top_app,omitempty"`
 }
 
 type Incident struct {
@@ -77,11 +82,13 @@ func DefaultConfig() Config {
 		MinBaselineSamples: 30,
 		MinRiseMS:          30,
 		EndAfter:           5 * time.Second,
-		Grace:              5 * time.Second,
-		Lead:               3 * time.Second,
-		MinUpBps:           125_000, // 1 Mbps
-		MinDownBps:         625_000, // 5 Mbps
-		MaxSuspects:        3,
+		// Per-app samples reach the hub up to ~5 s late (sampling interval
+		// plus report interval), so wait a bit longer than that.
+		Grace:       8 * time.Second,
+		Lead:        3 * time.Second,
+		MinUpBps:    125_000, // 1 Mbps
+		MinDownBps:  625_000, // 5 Mbps
+		MaxSuspects: 3,
 	}
 }
 
@@ -95,6 +102,7 @@ type Detector struct {
 	internet []point
 	gateway  []point
 	traffic  map[string]map[string][]point // device -> metric -> rates
+	apps     map[string]map[string][]point // device -> metric|app -> rates
 
 	open *Incident
 	// Last time the smoothed signal said "lagging" (decides when it's over),
@@ -105,7 +113,7 @@ type Detector struct {
 }
 
 func NewDetector(cfg Config) *Detector {
-	return &Detector{cfg: cfg, traffic: map[string]map[string][]point{}}
+	return &Detector{cfg: cfg, traffic: map[string]map[string][]point{}, apps: map[string]map[string][]point{}}
 }
 
 // Observe takes one stored sample and returns every incident that started,
@@ -120,6 +128,15 @@ func (d *Detector) Observe(s collector.Sample) []*Incident {
 			d.traffic[s.Device] = byMetric
 		}
 		byMetric[s.Metric] = d.keep(append(byMetric[s.Metric], point{s.At, s.Value}), s.At)
+		return nil
+	case s.Metric == procnet.MetricRx || s.Metric == procnet.MetricTx:
+		byApp := d.apps[s.Device]
+		if byApp == nil {
+			byApp = map[string][]point{}
+			d.apps[s.Device] = byApp
+		}
+		k := s.Metric + "|" + s.Labels["app"]
+		byApp[k] = d.keep(append(byApp[k], point{s.At, s.Value}), s.At)
 		return nil
 	case s.Metric == probe.MetricRTT && s.Device == "hub":
 		switch s.Labels["target"] {
@@ -285,6 +302,11 @@ func (d *Detector) suspects(from, to time.Time) []Suspect {
 			PeakDownBps: peak(between(byMetric[hostnet.MetricRx], from, to)),
 		}
 		if s.PeakUpBps >= d.cfg.MinUpBps || s.PeakDownBps >= d.cfg.MinDownBps {
+			metric := procnet.MetricRx
+			if s.PeakUpBps >= d.cfg.MinUpBps {
+				metric = procnet.MetricTx
+			}
+			s.TopApp = d.topApp(device, metric, from, to)
 			out = append(out, s)
 		}
 	}
@@ -297,6 +319,27 @@ func (d *Detector) suspects(from, to time.Time) []Suspect {
 		return cmp.Compare(b.PeakDownBps, a.PeakDownBps)
 	})
 	return out[:min(len(out), d.cfg.MaxSuspects)]
+}
+
+// topApp is the app on device with the most data in metric's direction
+// between from and to.
+func (d *Detector) topApp(device, metric string, from, to time.Time) string {
+	var best string
+	var bestSum float64
+	for k, points := range d.apps[device] {
+		m, app, _ := strings.Cut(k, "|")
+		if m != metric {
+			continue
+		}
+		var sum float64
+		for _, p := range between(points, from, to) {
+			sum += p.v
+		}
+		if sum > bestSum || (sum == bestSum && sum > 0 && app < best) {
+			best, bestSum = app, sum
+		}
+	}
+	return best
 }
 
 func between(points []point, from, to time.Time) []point {

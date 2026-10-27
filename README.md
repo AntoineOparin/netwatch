@@ -50,6 +50,8 @@ The hub pings your router, the first ISP hop and 1.1.1.1. Both are detected auto
 
 Lag means internet ping more than 30 ms above its normal (median) level; change that with `-lag-rise`.
 
+On macOS the agent also reports which apps are using the network (via `nettop`, no root needed). Windows and Linux would need admin-level tracing, so they show computer totals only for now.
+
 Every minute the hub also sweeps the local network for devices (ARP), names them through the router's DNS, and pings the ones that answer every 5 s. Change the interval with `-sweep-every`, or turn it off with `-sweep-every 0`.
 
 Other targets: `make test`, `make check` (tests + vet + lint + typecheck), `make gen` (after editing `proto/`), `make cross` (agent builds for every OS).
@@ -61,7 +63,7 @@ Other targets: `make test`, `make check` (tests + vet + lint + typecheck), `make
 - [x] **M3 Who's using bandwidth**: per-computer upload/download, stored as a time series
 - [x] **M4 Lag explainer**: when latency spikes, show whose traffic spiked at the same moment
 - [x] **M5 Every device on the LAN**: ARP/mDNS discovery, vendor lookup, the Xbox's own LAN ping
-- [ ] **M6 Per-process breakdown**: answers which app is uploading
+- [x] **M6 Per-process breakdown**: answers which app is uploading
 - [ ] **M7 Whole-LAN bytes (Raspberry Pi)**: real per-device traffic for consoles, phones and TVs
 
 ## Why it can't just see the Xbox's traffic (yet)

@@ -180,6 +180,181 @@ func (LatencyTarget) EnumDescriptor() ([]byte, []int) {
 	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{2}
 }
 
+type ListTopAppsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Window        *durationpb.Duration   `protobuf:"bytes,1,opt,name=window,proto3" json:"window,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTopAppsRequest) Reset() {
+	*x = ListTopAppsRequest{}
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTopAppsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTopAppsRequest) ProtoMessage() {}
+
+func (x *ListTopAppsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTopAppsRequest.ProtoReflect.Descriptor instead.
+func (*ListTopAppsRequest) Descriptor() ([]byte, []int) {
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ListTopAppsRequest) GetWindow() *durationpb.Duration {
+	if x != nil {
+		return x.Window
+	}
+	return nil
+}
+
+type ListTopAppsResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Busiest first within each agent.
+	Apps          []*AppUsage `protobuf:"bytes,1,rep,name=apps,proto3" json:"apps,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTopAppsResponse) Reset() {
+	*x = ListTopAppsResponse{}
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTopAppsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTopAppsResponse) ProtoMessage() {}
+
+func (x *ListTopAppsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTopAppsResponse.ProtoReflect.Descriptor instead.
+func (*ListTopAppsResponse) Descriptor() ([]byte, []int) {
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ListTopAppsResponse) GetApps() []*AppUsage {
+	if x != nil {
+		return x.Apps
+	}
+	return nil
+}
+
+type AppUsage struct {
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	AgentId string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	// e.g. "Google Chrome", "OneDrive", "curl".
+	App string `protobuf:"bytes,2,opt,name=app,proto3" json:"app,omitempty"`
+	// Averages over the whole window (idle time counts as zero).
+	AvgDownloadBytesPerSec  float64 `protobuf:"fixed64,3,opt,name=avg_download_bytes_per_sec,json=avgDownloadBytesPerSec,proto3" json:"avg_download_bytes_per_sec,omitempty"`
+	AvgUploadBytesPerSec    float64 `protobuf:"fixed64,4,opt,name=avg_upload_bytes_per_sec,json=avgUploadBytesPerSec,proto3" json:"avg_upload_bytes_per_sec,omitempty"`
+	PeakDownloadBytesPerSec float64 `protobuf:"fixed64,5,opt,name=peak_download_bytes_per_sec,json=peakDownloadBytesPerSec,proto3" json:"peak_download_bytes_per_sec,omitempty"`
+	PeakUploadBytesPerSec   float64 `protobuf:"fixed64,6,opt,name=peak_upload_bytes_per_sec,json=peakUploadBytesPerSec,proto3" json:"peak_upload_bytes_per_sec,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
+}
+
+func (x *AppUsage) Reset() {
+	*x = AppUsage{}
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AppUsage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AppUsage) ProtoMessage() {}
+
+func (x *AppUsage) ProtoReflect() protoreflect.Message {
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AppUsage.ProtoReflect.Descriptor instead.
+func (*AppUsage) Descriptor() ([]byte, []int) {
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *AppUsage) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *AppUsage) GetApp() string {
+	if x != nil {
+		return x.App
+	}
+	return ""
+}
+
+func (x *AppUsage) GetAvgDownloadBytesPerSec() float64 {
+	if x != nil {
+		return x.AvgDownloadBytesPerSec
+	}
+	return 0
+}
+
+func (x *AppUsage) GetAvgUploadBytesPerSec() float64 {
+	if x != nil {
+		return x.AvgUploadBytesPerSec
+	}
+	return 0
+}
+
+func (x *AppUsage) GetPeakDownloadBytesPerSec() float64 {
+	if x != nil {
+		return x.PeakDownloadBytesPerSec
+	}
+	return 0
+}
+
+func (x *AppUsage) GetPeakUploadBytesPerSec() float64 {
+	if x != nil {
+		return x.PeakUploadBytesPerSec
+	}
+	return 0
+}
+
 type ListDevicesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -188,7 +363,7 @@ type ListDevicesRequest struct {
 
 func (x *ListDevicesRequest) Reset() {
 	*x = ListDevicesRequest{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[0]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -200,7 +375,7 @@ func (x *ListDevicesRequest) String() string {
 func (*ListDevicesRequest) ProtoMessage() {}
 
 func (x *ListDevicesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[0]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -213,7 +388,7 @@ func (x *ListDevicesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDevicesRequest.ProtoReflect.Descriptor instead.
 func (*ListDevicesRequest) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{0}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{3}
 }
 
 type ListDevicesResponse struct {
@@ -225,7 +400,7 @@ type ListDevicesResponse struct {
 
 func (x *ListDevicesResponse) Reset() {
 	*x = ListDevicesResponse{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[1]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -237,7 +412,7 @@ func (x *ListDevicesResponse) String() string {
 func (*ListDevicesResponse) ProtoMessage() {}
 
 func (x *ListDevicesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[1]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -250,7 +425,7 @@ func (x *ListDevicesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDevicesResponse.ProtoReflect.Descriptor instead.
 func (*ListDevicesResponse) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{1}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ListDevicesResponse) GetDevices() []*LanDevice {
@@ -296,7 +471,7 @@ type LanDevice struct {
 
 func (x *LanDevice) Reset() {
 	*x = LanDevice{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[2]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -308,7 +483,7 @@ func (x *LanDevice) String() string {
 func (*LanDevice) ProtoMessage() {}
 
 func (x *LanDevice) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[2]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -321,7 +496,7 @@ func (x *LanDevice) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LanDevice.ProtoReflect.Descriptor instead.
 func (*LanDevice) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{2}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *LanDevice) GetMac() string {
@@ -453,7 +628,7 @@ type SetDeviceNicknameRequest struct {
 
 func (x *SetDeviceNicknameRequest) Reset() {
 	*x = SetDeviceNicknameRequest{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[3]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -465,7 +640,7 @@ func (x *SetDeviceNicknameRequest) String() string {
 func (*SetDeviceNicknameRequest) ProtoMessage() {}
 
 func (x *SetDeviceNicknameRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[3]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -478,7 +653,7 @@ func (x *SetDeviceNicknameRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetDeviceNicknameRequest.ProtoReflect.Descriptor instead.
 func (*SetDeviceNicknameRequest) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{3}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *SetDeviceNicknameRequest) GetMac() string {
@@ -503,7 +678,7 @@ type SetDeviceNicknameResponse struct {
 
 func (x *SetDeviceNicknameResponse) Reset() {
 	*x = SetDeviceNicknameResponse{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[4]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -515,7 +690,7 @@ func (x *SetDeviceNicknameResponse) String() string {
 func (*SetDeviceNicknameResponse) ProtoMessage() {}
 
 func (x *SetDeviceNicknameResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[4]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -528,7 +703,7 @@ func (x *SetDeviceNicknameResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetDeviceNicknameResponse.ProtoReflect.Descriptor instead.
 func (*SetDeviceNicknameResponse) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{4}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{7}
 }
 
 type ListIncidentsRequest struct {
@@ -540,7 +715,7 @@ type ListIncidentsRequest struct {
 
 func (x *ListIncidentsRequest) Reset() {
 	*x = ListIncidentsRequest{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[5]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -552,7 +727,7 @@ func (x *ListIncidentsRequest) String() string {
 func (*ListIncidentsRequest) ProtoMessage() {}
 
 func (x *ListIncidentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[5]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -565,7 +740,7 @@ func (x *ListIncidentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListIncidentsRequest.ProtoReflect.Descriptor instead.
 func (*ListIncidentsRequest) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{5}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListIncidentsRequest) GetSince() *durationpb.Duration {
@@ -584,7 +759,7 @@ type ListIncidentsResponse struct {
 
 func (x *ListIncidentsResponse) Reset() {
 	*x = ListIncidentsResponse{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[6]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -596,7 +771,7 @@ func (x *ListIncidentsResponse) String() string {
 func (*ListIncidentsResponse) ProtoMessage() {}
 
 func (x *ListIncidentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[6]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -609,7 +784,7 @@ func (x *ListIncidentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListIncidentsResponse.ProtoReflect.Descriptor instead.
 func (*ListIncidentsResponse) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{6}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListIncidentsResponse) GetIncidents() []*Incident {
@@ -641,7 +816,7 @@ type Incident struct {
 
 func (x *Incident) Reset() {
 	*x = Incident{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[7]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -653,7 +828,7 @@ func (x *Incident) String() string {
 func (*Incident) ProtoMessage() {}
 
 func (x *Incident) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[7]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -666,7 +841,7 @@ func (x *Incident) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Incident.ProtoReflect.Descriptor instead.
 func (*Incident) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{7}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Incident) GetId() int64 {
@@ -738,13 +913,16 @@ type Suspect struct {
 	// Highest rates seen during the incident (and just before it).
 	PeakUploadBytesPerSec   float64 `protobuf:"fixed64,2,opt,name=peak_upload_bytes_per_sec,json=peakUploadBytesPerSec,proto3" json:"peak_upload_bytes_per_sec,omitempty"`
 	PeakDownloadBytesPerSec float64 `protobuf:"fixed64,3,opt,name=peak_download_bytes_per_sec,json=peakDownloadBytesPerSec,proto3" json:"peak_download_bytes_per_sec,omitempty"`
-	unknownFields           protoimpl.UnknownFields
-	sizeCache               protoimpl.SizeCache
+	// The app on that computer that moved the most data in the suspect's
+	// busy direction, when the agent can tell (macOS).
+	TopApp        string `protobuf:"bytes,4,opt,name=top_app,json=topApp,proto3" json:"top_app,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Suspect) Reset() {
 	*x = Suspect{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[8]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -756,7 +934,7 @@ func (x *Suspect) String() string {
 func (*Suspect) ProtoMessage() {}
 
 func (x *Suspect) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[8]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -769,7 +947,7 @@ func (x *Suspect) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Suspect.ProtoReflect.Descriptor instead.
 func (*Suspect) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{8}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *Suspect) GetAgentId() string {
@@ -793,6 +971,13 @@ func (x *Suspect) GetPeakDownloadBytesPerSec() float64 {
 	return 0
 }
 
+func (x *Suspect) GetTopApp() string {
+	if x != nil {
+		return x.TopApp
+	}
+	return ""
+}
+
 type WatchThroughputRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	History       *durationpb.Duration   `protobuf:"bytes,1,opt,name=history,proto3" json:"history,omitempty"`
@@ -802,7 +987,7 @@ type WatchThroughputRequest struct {
 
 func (x *WatchThroughputRequest) Reset() {
 	*x = WatchThroughputRequest{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[9]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -814,7 +999,7 @@ func (x *WatchThroughputRequest) String() string {
 func (*WatchThroughputRequest) ProtoMessage() {}
 
 func (x *WatchThroughputRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[9]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -827,7 +1012,7 @@ func (x *WatchThroughputRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchThroughputRequest.ProtoReflect.Descriptor instead.
 func (*WatchThroughputRequest) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{9}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *WatchThroughputRequest) GetHistory() *durationpb.Duration {
@@ -846,7 +1031,7 @@ type WatchThroughputResponse struct {
 
 func (x *WatchThroughputResponse) Reset() {
 	*x = WatchThroughputResponse{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[10]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -858,7 +1043,7 @@ func (x *WatchThroughputResponse) String() string {
 func (*WatchThroughputResponse) ProtoMessage() {}
 
 func (x *WatchThroughputResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[10]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -871,7 +1056,7 @@ func (x *WatchThroughputResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchThroughputResponse.ProtoReflect.Descriptor instead.
 func (*WatchThroughputResponse) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{10}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *WatchThroughputResponse) GetPoints() []*ThroughputPoint {
@@ -895,7 +1080,7 @@ type ThroughputPoint struct {
 
 func (x *ThroughputPoint) Reset() {
 	*x = ThroughputPoint{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[11]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -907,7 +1092,7 @@ func (x *ThroughputPoint) String() string {
 func (*ThroughputPoint) ProtoMessage() {}
 
 func (x *ThroughputPoint) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[11]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -920,7 +1105,7 @@ func (x *ThroughputPoint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ThroughputPoint.ProtoReflect.Descriptor instead.
 func (*ThroughputPoint) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{11}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ThroughputPoint) GetAgentId() string {
@@ -967,7 +1152,7 @@ type WatchLatencyRequest struct {
 
 func (x *WatchLatencyRequest) Reset() {
 	*x = WatchLatencyRequest{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[12]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -979,7 +1164,7 @@ func (x *WatchLatencyRequest) String() string {
 func (*WatchLatencyRequest) ProtoMessage() {}
 
 func (x *WatchLatencyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[12]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -992,7 +1177,7 @@ func (x *WatchLatencyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchLatencyRequest.ProtoReflect.Descriptor instead.
 func (*WatchLatencyRequest) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{12}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *WatchLatencyRequest) GetHistory() *durationpb.Duration {
@@ -1011,7 +1196,7 @@ type WatchLatencyResponse struct {
 
 func (x *WatchLatencyResponse) Reset() {
 	*x = WatchLatencyResponse{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[13]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1023,7 +1208,7 @@ func (x *WatchLatencyResponse) String() string {
 func (*WatchLatencyResponse) ProtoMessage() {}
 
 func (x *WatchLatencyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[13]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1036,7 +1221,7 @@ func (x *WatchLatencyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchLatencyResponse.ProtoReflect.Descriptor instead.
 func (*WatchLatencyResponse) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{13}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *WatchLatencyResponse) GetPoints() []*LatencyPoint {
@@ -1060,7 +1245,7 @@ type LatencyPoint struct {
 
 func (x *LatencyPoint) Reset() {
 	*x = LatencyPoint{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[14]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1072,7 +1257,7 @@ func (x *LatencyPoint) String() string {
 func (*LatencyPoint) ProtoMessage() {}
 
 func (x *LatencyPoint) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[14]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1085,7 +1270,7 @@ func (x *LatencyPoint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LatencyPoint.ProtoReflect.Descriptor instead.
 func (*LatencyPoint) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{14}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *LatencyPoint) GetTarget() LatencyTarget {
@@ -1131,7 +1316,7 @@ type ListAgentsRequest struct {
 
 func (x *ListAgentsRequest) Reset() {
 	*x = ListAgentsRequest{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[15]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1143,7 +1328,7 @@ func (x *ListAgentsRequest) String() string {
 func (*ListAgentsRequest) ProtoMessage() {}
 
 func (x *ListAgentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[15]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1156,7 +1341,7 @@ func (x *ListAgentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAgentsRequest.ProtoReflect.Descriptor instead.
 func (*ListAgentsRequest) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{15}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{18}
 }
 
 type ListAgentsResponse struct {
@@ -1168,7 +1353,7 @@ type ListAgentsResponse struct {
 
 func (x *ListAgentsResponse) Reset() {
 	*x = ListAgentsResponse{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[16]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1180,7 +1365,7 @@ func (x *ListAgentsResponse) String() string {
 func (*ListAgentsResponse) ProtoMessage() {}
 
 func (x *ListAgentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[16]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1193,7 +1378,7 @@ func (x *ListAgentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAgentsResponse.ProtoReflect.Descriptor instead.
 func (*ListAgentsResponse) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{16}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ListAgentsResponse) GetAgents() []*Agent {
@@ -1221,7 +1406,7 @@ type Agent struct {
 
 func (x *Agent) Reset() {
 	*x = Agent{}
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[17]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1233,7 +1418,7 @@ func (x *Agent) String() string {
 func (*Agent) ProtoMessage() {}
 
 func (x *Agent) ProtoReflect() protoreflect.Message {
-	mi := &file_netwatch_v1_dashboard_proto_msgTypes[17]
+	mi := &file_netwatch_v1_dashboard_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1246,7 +1431,7 @@ func (x *Agent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Agent.ProtoReflect.Descriptor instead.
 func (*Agent) Descriptor() ([]byte, []int) {
-	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{17}
+	return file_netwatch_v1_dashboard_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Agent) GetId() string {
@@ -1316,7 +1501,18 @@ var File_netwatch_v1_dashboard_proto protoreflect.FileDescriptor
 
 const file_netwatch_v1_dashboard_proto_rawDesc = "" +
 	"\n" +
-	"\x1bnetwatch/v1/dashboard.proto\x12\vnetwatch.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x14\n" +
+	"\x1bnetwatch/v1/dashboard.proto\x12\vnetwatch.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"G\n" +
+	"\x12ListTopAppsRequest\x121\n" +
+	"\x06window\x18\x01 \x01(\v2\x19.google.protobuf.DurationR\x06window\"@\n" +
+	"\x13ListTopAppsResponse\x12)\n" +
+	"\x04apps\x18\x01 \x03(\v2\x15.netwatch.v1.AppUsageR\x04apps\"\xa3\x02\n" +
+	"\bAppUsage\x12\x19\n" +
+	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x10\n" +
+	"\x03app\x18\x02 \x01(\tR\x03app\x12:\n" +
+	"\x1aavg_download_bytes_per_sec\x18\x03 \x01(\x01R\x16avgDownloadBytesPerSec\x126\n" +
+	"\x18avg_upload_bytes_per_sec\x18\x04 \x01(\x01R\x14avgUploadBytesPerSec\x12<\n" +
+	"\x1bpeak_download_bytes_per_sec\x18\x05 \x01(\x01R\x17peakDownloadBytesPerSec\x128\n" +
+	"\x19peak_upload_bytes_per_sec\x18\x06 \x01(\x01R\x15peakUploadBytesPerSec\"\x14\n" +
 	"\x12ListDevicesRequest\"G\n" +
 	"\x13ListDevicesResponse\x120\n" +
 	"\adevices\x18\x01 \x03(\v2\x16.netwatch.v1.LanDeviceR\adevices\"\x95\x04\n" +
@@ -1360,11 +1556,12 @@ const file_netwatch_v1_dashboard_proto_rawDesc = "" +
 	"\n" +
 	"lost_pings\x18\a \x01(\x05R\tlostPings\x12\x14\n" +
 	"\x05pings\x18\b \x01(\x05R\x05pings\x120\n" +
-	"\bsuspects\x18\t \x03(\v2\x14.netwatch.v1.SuspectR\bsuspects\"\x9c\x01\n" +
+	"\bsuspects\x18\t \x03(\v2\x14.netwatch.v1.SuspectR\bsuspects\"\xb5\x01\n" +
 	"\aSuspect\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x128\n" +
 	"\x19peak_upload_bytes_per_sec\x18\x02 \x01(\x01R\x15peakUploadBytesPerSec\x12<\n" +
-	"\x1bpeak_download_bytes_per_sec\x18\x03 \x01(\x01R\x17peakDownloadBytesPerSec\"M\n" +
+	"\x1bpeak_download_bytes_per_sec\x18\x03 \x01(\x01R\x17peakDownloadBytesPerSec\x12\x17\n" +
+	"\atop_app\x18\x04 \x01(\tR\x06topApp\"M\n" +
 	"\x16WatchThroughputRequest\x123\n" +
 	"\ahistory\x18\x01 \x01(\v2\x19.google.protobuf.DurationR\ahistory\"O\n" +
 	"\x17WatchThroughputResponse\x124\n" +
@@ -1410,7 +1607,7 @@ const file_netwatch_v1_dashboard_proto_rawDesc = "" +
 	"\x1aLATENCY_TARGET_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16LATENCY_TARGET_GATEWAY\x10\x01\x12\x16\n" +
 	"\x12LATENCY_TARGET_ISP\x10\x02\x12\x1b\n" +
-	"\x17LATENCY_TARGET_INTERNET\x10\x032\xa6\x04\n" +
+	"\x17LATENCY_TARGET_INTERNET\x10\x032\xf8\x04\n" +
 	"\x10DashboardService\x12M\n" +
 	"\n" +
 	"ListAgents\x12\x1e.netwatch.v1.ListAgentsRequest\x1a\x1f.netwatch.v1.ListAgentsResponse\x12U\n" +
@@ -1418,7 +1615,8 @@ const file_netwatch_v1_dashboard_proto_rawDesc = "" +
 	"\x0fWatchThroughput\x12#.netwatch.v1.WatchThroughputRequest\x1a$.netwatch.v1.WatchThroughputResponse0\x01\x12V\n" +
 	"\rListIncidents\x12!.netwatch.v1.ListIncidentsRequest\x1a\".netwatch.v1.ListIncidentsResponse\x12P\n" +
 	"\vListDevices\x12\x1f.netwatch.v1.ListDevicesRequest\x1a .netwatch.v1.ListDevicesResponse\x12b\n" +
-	"\x11SetDeviceNickname\x12%.netwatch.v1.SetDeviceNicknameRequest\x1a&.netwatch.v1.SetDeviceNicknameResponseB>Z<github.com/AntoineOparin/netwatch/gen/netwatch/v1;netwatchv1b\x06proto3"
+	"\x11SetDeviceNickname\x12%.netwatch.v1.SetDeviceNicknameRequest\x1a&.netwatch.v1.SetDeviceNicknameResponse\x12P\n" +
+	"\vListTopApps\x12\x1f.netwatch.v1.ListTopAppsRequest\x1a .netwatch.v1.ListTopAppsResponseB>Z<github.com/AntoineOparin/netwatch/gen/netwatch/v1;netwatchv1b\x06proto3"
 
 var (
 	file_netwatch_v1_dashboard_proto_rawDescOnce sync.Once
@@ -1433,70 +1631,77 @@ func file_netwatch_v1_dashboard_proto_rawDescGZIP() []byte {
 }
 
 var file_netwatch_v1_dashboard_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_netwatch_v1_dashboard_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_netwatch_v1_dashboard_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_netwatch_v1_dashboard_proto_goTypes = []any{
 	(IncidentLocation)(0),             // 0: netwatch.v1.IncidentLocation
 	(Direction)(0),                    // 1: netwatch.v1.Direction
 	(LatencyTarget)(0),                // 2: netwatch.v1.LatencyTarget
-	(*ListDevicesRequest)(nil),        // 3: netwatch.v1.ListDevicesRequest
-	(*ListDevicesResponse)(nil),       // 4: netwatch.v1.ListDevicesResponse
-	(*LanDevice)(nil),                 // 5: netwatch.v1.LanDevice
-	(*SetDeviceNicknameRequest)(nil),  // 6: netwatch.v1.SetDeviceNicknameRequest
-	(*SetDeviceNicknameResponse)(nil), // 7: netwatch.v1.SetDeviceNicknameResponse
-	(*ListIncidentsRequest)(nil),      // 8: netwatch.v1.ListIncidentsRequest
-	(*ListIncidentsResponse)(nil),     // 9: netwatch.v1.ListIncidentsResponse
-	(*Incident)(nil),                  // 10: netwatch.v1.Incident
-	(*Suspect)(nil),                   // 11: netwatch.v1.Suspect
-	(*WatchThroughputRequest)(nil),    // 12: netwatch.v1.WatchThroughputRequest
-	(*WatchThroughputResponse)(nil),   // 13: netwatch.v1.WatchThroughputResponse
-	(*ThroughputPoint)(nil),           // 14: netwatch.v1.ThroughputPoint
-	(*WatchLatencyRequest)(nil),       // 15: netwatch.v1.WatchLatencyRequest
-	(*WatchLatencyResponse)(nil),      // 16: netwatch.v1.WatchLatencyResponse
-	(*LatencyPoint)(nil),              // 17: netwatch.v1.LatencyPoint
-	(*ListAgentsRequest)(nil),         // 18: netwatch.v1.ListAgentsRequest
-	(*ListAgentsResponse)(nil),        // 19: netwatch.v1.ListAgentsResponse
-	(*Agent)(nil),                     // 20: netwatch.v1.Agent
-	(*timestamppb.Timestamp)(nil),     // 21: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),       // 22: google.protobuf.Duration
+	(*ListTopAppsRequest)(nil),        // 3: netwatch.v1.ListTopAppsRequest
+	(*ListTopAppsResponse)(nil),       // 4: netwatch.v1.ListTopAppsResponse
+	(*AppUsage)(nil),                  // 5: netwatch.v1.AppUsage
+	(*ListDevicesRequest)(nil),        // 6: netwatch.v1.ListDevicesRequest
+	(*ListDevicesResponse)(nil),       // 7: netwatch.v1.ListDevicesResponse
+	(*LanDevice)(nil),                 // 8: netwatch.v1.LanDevice
+	(*SetDeviceNicknameRequest)(nil),  // 9: netwatch.v1.SetDeviceNicknameRequest
+	(*SetDeviceNicknameResponse)(nil), // 10: netwatch.v1.SetDeviceNicknameResponse
+	(*ListIncidentsRequest)(nil),      // 11: netwatch.v1.ListIncidentsRequest
+	(*ListIncidentsResponse)(nil),     // 12: netwatch.v1.ListIncidentsResponse
+	(*Incident)(nil),                  // 13: netwatch.v1.Incident
+	(*Suspect)(nil),                   // 14: netwatch.v1.Suspect
+	(*WatchThroughputRequest)(nil),    // 15: netwatch.v1.WatchThroughputRequest
+	(*WatchThroughputResponse)(nil),   // 16: netwatch.v1.WatchThroughputResponse
+	(*ThroughputPoint)(nil),           // 17: netwatch.v1.ThroughputPoint
+	(*WatchLatencyRequest)(nil),       // 18: netwatch.v1.WatchLatencyRequest
+	(*WatchLatencyResponse)(nil),      // 19: netwatch.v1.WatchLatencyResponse
+	(*LatencyPoint)(nil),              // 20: netwatch.v1.LatencyPoint
+	(*ListAgentsRequest)(nil),         // 21: netwatch.v1.ListAgentsRequest
+	(*ListAgentsResponse)(nil),        // 22: netwatch.v1.ListAgentsResponse
+	(*Agent)(nil),                     // 23: netwatch.v1.Agent
+	(*durationpb.Duration)(nil),       // 24: google.protobuf.Duration
+	(*timestamppb.Timestamp)(nil),     // 25: google.protobuf.Timestamp
 }
 var file_netwatch_v1_dashboard_proto_depIdxs = []int32{
-	5,  // 0: netwatch.v1.ListDevicesResponse.devices:type_name -> netwatch.v1.LanDevice
-	21, // 1: netwatch.v1.LanDevice.first_seen:type_name -> google.protobuf.Timestamp
-	21, // 2: netwatch.v1.LanDevice.last_seen:type_name -> google.protobuf.Timestamp
-	22, // 3: netwatch.v1.ListIncidentsRequest.since:type_name -> google.protobuf.Duration
-	10, // 4: netwatch.v1.ListIncidentsResponse.incidents:type_name -> netwatch.v1.Incident
-	21, // 5: netwatch.v1.Incident.start:type_name -> google.protobuf.Timestamp
-	21, // 6: netwatch.v1.Incident.end:type_name -> google.protobuf.Timestamp
-	0,  // 7: netwatch.v1.Incident.location:type_name -> netwatch.v1.IncidentLocation
-	11, // 8: netwatch.v1.Incident.suspects:type_name -> netwatch.v1.Suspect
-	22, // 9: netwatch.v1.WatchThroughputRequest.history:type_name -> google.protobuf.Duration
-	14, // 10: netwatch.v1.WatchThroughputResponse.points:type_name -> netwatch.v1.ThroughputPoint
-	1,  // 11: netwatch.v1.ThroughputPoint.direction:type_name -> netwatch.v1.Direction
-	21, // 12: netwatch.v1.ThroughputPoint.at:type_name -> google.protobuf.Timestamp
-	22, // 13: netwatch.v1.WatchLatencyRequest.history:type_name -> google.protobuf.Duration
-	17, // 14: netwatch.v1.WatchLatencyResponse.points:type_name -> netwatch.v1.LatencyPoint
-	2,  // 15: netwatch.v1.LatencyPoint.target:type_name -> netwatch.v1.LatencyTarget
-	21, // 16: netwatch.v1.LatencyPoint.at:type_name -> google.protobuf.Timestamp
-	20, // 17: netwatch.v1.ListAgentsResponse.agents:type_name -> netwatch.v1.Agent
-	21, // 18: netwatch.v1.Agent.registered_at:type_name -> google.protobuf.Timestamp
-	21, // 19: netwatch.v1.Agent.last_seen:type_name -> google.protobuf.Timestamp
-	18, // 20: netwatch.v1.DashboardService.ListAgents:input_type -> netwatch.v1.ListAgentsRequest
-	15, // 21: netwatch.v1.DashboardService.WatchLatency:input_type -> netwatch.v1.WatchLatencyRequest
-	12, // 22: netwatch.v1.DashboardService.WatchThroughput:input_type -> netwatch.v1.WatchThroughputRequest
-	8,  // 23: netwatch.v1.DashboardService.ListIncidents:input_type -> netwatch.v1.ListIncidentsRequest
-	3,  // 24: netwatch.v1.DashboardService.ListDevices:input_type -> netwatch.v1.ListDevicesRequest
-	6,  // 25: netwatch.v1.DashboardService.SetDeviceNickname:input_type -> netwatch.v1.SetDeviceNicknameRequest
-	19, // 26: netwatch.v1.DashboardService.ListAgents:output_type -> netwatch.v1.ListAgentsResponse
-	16, // 27: netwatch.v1.DashboardService.WatchLatency:output_type -> netwatch.v1.WatchLatencyResponse
-	13, // 28: netwatch.v1.DashboardService.WatchThroughput:output_type -> netwatch.v1.WatchThroughputResponse
-	9,  // 29: netwatch.v1.DashboardService.ListIncidents:output_type -> netwatch.v1.ListIncidentsResponse
-	4,  // 30: netwatch.v1.DashboardService.ListDevices:output_type -> netwatch.v1.ListDevicesResponse
-	7,  // 31: netwatch.v1.DashboardService.SetDeviceNickname:output_type -> netwatch.v1.SetDeviceNicknameResponse
-	26, // [26:32] is the sub-list for method output_type
-	20, // [20:26] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	24, // 0: netwatch.v1.ListTopAppsRequest.window:type_name -> google.protobuf.Duration
+	5,  // 1: netwatch.v1.ListTopAppsResponse.apps:type_name -> netwatch.v1.AppUsage
+	8,  // 2: netwatch.v1.ListDevicesResponse.devices:type_name -> netwatch.v1.LanDevice
+	25, // 3: netwatch.v1.LanDevice.first_seen:type_name -> google.protobuf.Timestamp
+	25, // 4: netwatch.v1.LanDevice.last_seen:type_name -> google.protobuf.Timestamp
+	24, // 5: netwatch.v1.ListIncidentsRequest.since:type_name -> google.protobuf.Duration
+	13, // 6: netwatch.v1.ListIncidentsResponse.incidents:type_name -> netwatch.v1.Incident
+	25, // 7: netwatch.v1.Incident.start:type_name -> google.protobuf.Timestamp
+	25, // 8: netwatch.v1.Incident.end:type_name -> google.protobuf.Timestamp
+	0,  // 9: netwatch.v1.Incident.location:type_name -> netwatch.v1.IncidentLocation
+	14, // 10: netwatch.v1.Incident.suspects:type_name -> netwatch.v1.Suspect
+	24, // 11: netwatch.v1.WatchThroughputRequest.history:type_name -> google.protobuf.Duration
+	17, // 12: netwatch.v1.WatchThroughputResponse.points:type_name -> netwatch.v1.ThroughputPoint
+	1,  // 13: netwatch.v1.ThroughputPoint.direction:type_name -> netwatch.v1.Direction
+	25, // 14: netwatch.v1.ThroughputPoint.at:type_name -> google.protobuf.Timestamp
+	24, // 15: netwatch.v1.WatchLatencyRequest.history:type_name -> google.protobuf.Duration
+	20, // 16: netwatch.v1.WatchLatencyResponse.points:type_name -> netwatch.v1.LatencyPoint
+	2,  // 17: netwatch.v1.LatencyPoint.target:type_name -> netwatch.v1.LatencyTarget
+	25, // 18: netwatch.v1.LatencyPoint.at:type_name -> google.protobuf.Timestamp
+	23, // 19: netwatch.v1.ListAgentsResponse.agents:type_name -> netwatch.v1.Agent
+	25, // 20: netwatch.v1.Agent.registered_at:type_name -> google.protobuf.Timestamp
+	25, // 21: netwatch.v1.Agent.last_seen:type_name -> google.protobuf.Timestamp
+	21, // 22: netwatch.v1.DashboardService.ListAgents:input_type -> netwatch.v1.ListAgentsRequest
+	18, // 23: netwatch.v1.DashboardService.WatchLatency:input_type -> netwatch.v1.WatchLatencyRequest
+	15, // 24: netwatch.v1.DashboardService.WatchThroughput:input_type -> netwatch.v1.WatchThroughputRequest
+	11, // 25: netwatch.v1.DashboardService.ListIncidents:input_type -> netwatch.v1.ListIncidentsRequest
+	6,  // 26: netwatch.v1.DashboardService.ListDevices:input_type -> netwatch.v1.ListDevicesRequest
+	9,  // 27: netwatch.v1.DashboardService.SetDeviceNickname:input_type -> netwatch.v1.SetDeviceNicknameRequest
+	3,  // 28: netwatch.v1.DashboardService.ListTopApps:input_type -> netwatch.v1.ListTopAppsRequest
+	22, // 29: netwatch.v1.DashboardService.ListAgents:output_type -> netwatch.v1.ListAgentsResponse
+	19, // 30: netwatch.v1.DashboardService.WatchLatency:output_type -> netwatch.v1.WatchLatencyResponse
+	16, // 31: netwatch.v1.DashboardService.WatchThroughput:output_type -> netwatch.v1.WatchThroughputResponse
+	12, // 32: netwatch.v1.DashboardService.ListIncidents:output_type -> netwatch.v1.ListIncidentsResponse
+	7,  // 33: netwatch.v1.DashboardService.ListDevices:output_type -> netwatch.v1.ListDevicesResponse
+	10, // 34: netwatch.v1.DashboardService.SetDeviceNickname:output_type -> netwatch.v1.SetDeviceNicknameResponse
+	4,  // 35: netwatch.v1.DashboardService.ListTopApps:output_type -> netwatch.v1.ListTopAppsResponse
+	29, // [29:36] is the sub-list for method output_type
+	22, // [22:29] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_netwatch_v1_dashboard_proto_init() }
@@ -1510,7 +1715,7 @@ func file_netwatch_v1_dashboard_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_netwatch_v1_dashboard_proto_rawDesc), len(file_netwatch_v1_dashboard_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   18,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

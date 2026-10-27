@@ -2,6 +2,8 @@ import {
   type Highlight,
   TimeSeriesChart,
 } from "~/components/time-series-chart";
+import type { AppUsage } from "~/gen/netwatch/v1/dashboard_pb";
+import { appsByAgent, describeApps } from "./apps";
 import {
   type DeviceTraffic,
   deviceColor,
@@ -17,10 +19,19 @@ const SUMMARY_WINDOW_MS = 60_000;
 interface Props {
   windowMs: number;
   hostnames: Record<string, string>; // agent ID -> hostname
+  agentOS: Record<string, string>; // agent ID -> "darwin", "windows", ...
+  apps: AppUsage[]; // busiest apps over the last minute
   highlights: Highlight[];
 }
 
-export function ThroughputPanel({ windowMs, hostnames, highlights }: Props) {
+export function ThroughputPanel({
+  windowMs,
+  hostnames,
+  agentOS,
+  apps,
+  highlights,
+}: Props) {
+  const topApps = appsByAgent(apps);
   const { data } = useThroughputStream(windowMs);
   const ids = Object.keys(data).sort((a, b) =>
     (hostnames[a] ?? a).localeCompare(hostnames[b] ?? b),
@@ -96,6 +107,7 @@ export function ThroughputPanel({ windowMs, hostnames, highlights }: Props) {
                             {s.iface}
                           </span>
                         </div>
+                        <AppLine apps={topApps[id] ?? []} os={agentOS[id]} />
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums">
                         {formatRate(s.downNow)}
@@ -151,4 +163,23 @@ export function ThroughputPanel({ windowMs, hostnames, highlights }: Props) {
       )}
     </section>
   );
+}
+
+// Which apps were busy on this computer in the last minute.
+function AppLine({ apps, os }: { apps: AppUsage[]; os?: string }) {
+  let content: React.ReactNode;
+  if (apps.length) {
+    content = describeApps(apps).map((a, i) => (
+      <span key={a.app}>
+        {i > 0 && " · "}
+        <span className="text-gray-700 dark:text-gray-300">{a.app}</span>{" "}
+        <span className="tabular-nums">{a.text}</span>
+      </span>
+    ));
+  } else if (os && os !== "darwin") {
+    content = "Per-app breakdown is macOS-only for now.";
+  } else {
+    content = "No app was busy in the last minute.";
+  }
+  return <p className="mt-0.5 pl-6 text-xs text-gray-500">{content}</p>;
 }

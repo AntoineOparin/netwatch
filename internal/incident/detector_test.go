@@ -8,6 +8,7 @@ import (
 	"github.com/AntoineOparin/netwatch/internal/collector"
 	"github.com/AntoineOparin/netwatch/internal/collector/hostnet"
 	"github.com/AntoineOparin/netwatch/internal/collector/probe"
+	"github.com/AntoineOparin/netwatch/internal/collector/procnet"
 )
 
 var t0 = time.Date(2026, 10, 27, 21, 0, 0, 0, time.UTC)
@@ -25,6 +26,9 @@ func run(d *Detector, secs []second) (all []*Incident) {
 		for device, up := range s.upload {
 			d.Observe(collector.Sample{Device: device, Metric: hostnet.MetricTx, Value: up, At: at})
 			d.Observe(collector.Sample{Device: device, Metric: hostnet.MetricRx, Value: 0, At: at})
+			// The busy computer's upload is mostly OneDrive, a bit of Chrome.
+			d.Observe(collector.Sample{Device: device, Metric: procnet.MetricTx, Labels: map[string]string{"app": "OneDrive"}, Value: up * 0.8, At: at})
+			d.Observe(collector.Sample{Device: device, Metric: procnet.MetricTx, Labels: map[string]string{"app": "Google Chrome"}, Value: up * 0.2, At: at})
 		}
 		d.Observe(collector.Sample{Device: "hub", Metric: probe.MetricRTT, Labels: map[string]string{"target": probe.TargetGateway}, Value: s.gateway, At: at})
 		for _, inc := range d.Observe(collector.Sample{Device: "hub", Metric: probe.MetricRTT, Labels: map[string]string{"target": probe.TargetInternet}, Value: s.internet, At: at}) {
@@ -62,7 +66,7 @@ func TestUploadCausesUpstreamIncident(t *testing.T) {
 		repeat(60, second{gateway: 4, internet: 20, upload: quiet}),
 		repeat(3, second{gateway: 4, internet: 20, upload: uploading}),   // upload starts...
 		repeat(20, second{gateway: 5, internet: 180, upload: uploading}), // ...queue fills
-		repeat(15, second{gateway: 4, internet: 20, upload: quiet}),
+		repeat(20, second{gateway: 4, internet: 20, upload: quiet}),
 	))
 
 	if len(got) != 1 {
@@ -89,6 +93,9 @@ func TestUploadCausesUpstreamIncident(t *testing.T) {
 	}
 	if !inc.Final {
 		t.Error("incident should be final after the grace period")
+	}
+	if app := inc.Suspects[0].TopApp; app != "OneDrive" {
+		t.Errorf("top app = %q, want OneDrive", app)
 	}
 }
 

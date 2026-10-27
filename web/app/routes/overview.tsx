@@ -13,18 +13,20 @@ import type { Route } from "./+types/overview";
 const MAX_WINDOW_SECONDS = BigInt(WINDOWS[WINDOWS.length - 1].ms / 1000);
 
 export async function clientLoader() {
-  const [{ agents }, { incidents }, { devices }] = await Promise.all([
+  const [{ agents }, { incidents }, { devices }, { apps }] = await Promise.all([
     dashboard().listAgents({}),
     dashboard().listIncidents({ since: { seconds: MAX_WINDOW_SECONDS } }),
     dashboard().listDevices({}),
+    dashboard().listTopApps({ window: { seconds: 60n } }),
   ]);
-  return { agents, incidents, devices };
+  return { agents, incidents, devices, apps };
 }
 
 export default function Overview({ loaderData }: Route.ComponentProps) {
   usePolling(5000);
   const [windowMs, setWindowMs] = useState(WINDOWS[1].ms);
-  const { agents, incidents, devices } = loaderData;
+  const { agents, incidents, devices, apps } = loaderData;
+  const agentOS = Object.fromEntries(agents.map((a) => [a.id, a.os]));
   const devicesOnline = devices.filter((d) => d.online).length;
   const online = agents.filter((a) => a.online).length;
   const hostnames = Object.fromEntries(agents.map((a) => [a.id, a.hostname]));
@@ -42,6 +44,8 @@ export default function Overview({ loaderData }: Route.ComponentProps) {
       <ThroughputPanel
         windowMs={windowMs}
         hostnames={hostnames}
+        agentOS={agentOS}
+        apps={apps}
         highlights={highlights}
       />
 

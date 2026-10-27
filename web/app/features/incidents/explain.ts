@@ -55,9 +55,10 @@ function cause(inc: Incident, hostnames: Record<string, string>) {
   }
   const name = (id: string) => hostnames[id] ?? id;
   const activity = (s: (typeof inc.suspects)[number]) =>
-    s.peakUploadBytesPerSec >= ONE_MBPS
+    (s.peakUploadBytesPerSec >= ONE_MBPS
       ? `uploading up to ${formatRate(s.peakUploadBytesPerSec)}`
-      : `downloading up to ${formatRate(s.peakDownloadBytesPerSec)}`;
+      : `downloading up to ${formatRate(s.peakDownloadBytesPerSec)}`) +
+    (s.topApp ? ` (mostly ${s.topApp})` : "");
 
   let text = `At the same time, ${name(top.agentId)} was ${activity(top)}`;
   if (others.length) {

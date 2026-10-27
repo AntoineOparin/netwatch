@@ -75,6 +75,7 @@ func (s *Server) ListIncidents(
 				AgentId:                 sus.Device,
 				PeakUploadBytesPerSec:   sus.PeakUpBps,
 				PeakDownloadBytesPerSec: sus.PeakDownBps,
+				TopApp:                  sus.TopApp,
 			})
 		}
 		out[i] = pb

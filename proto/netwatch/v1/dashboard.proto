@@ -21,6 +21,28 @@ service DashboardService {
   rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
   // Give a device a friendly name, e.g. "Xbox". Empty clears it.
   rpc SetDeviceNickname(SetDeviceNicknameRequest) returns (SetDeviceNicknameResponse);
+  // The busiest apps on each computer over the window (macOS agents only).
+  rpc ListTopApps(ListTopAppsRequest) returns (ListTopAppsResponse);
+}
+
+message ListTopAppsRequest {
+  google.protobuf.Duration window = 1;
+}
+
+message ListTopAppsResponse {
+  // Busiest first within each agent.
+  repeated AppUsage apps = 1;
+}
+
+message AppUsage {
+  string agent_id = 1;
+  // e.g. "Google Chrome", "OneDrive", "curl".
+  string app = 2;
+  // Averages over the whole window (idle time counts as zero).
+  double avg_download_bytes_per_sec = 3;
+  double avg_upload_bytes_per_sec = 4;
+  double peak_download_bytes_per_sec = 5;
+  double peak_upload_bytes_per_sec = 6;
 }
 
 message ListDevicesRequest {}
@@ -106,6 +128,9 @@ message Suspect {
   // Highest rates seen during the incident (and just before it).
   double peak_upload_bytes_per_sec = 2;
   double peak_download_bytes_per_sec = 3;
+  // The app on that computer that moved the most data in the suspect's
+  // busy direction, when the agent can tell (macOS).
+  string top_app = 4;
 }
 
 message WatchThroughputRequest {

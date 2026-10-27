@@ -15,6 +15,7 @@ import (
 	"github.com/AntoineOparin/netwatch/internal/agent"
 	"github.com/AntoineOparin/netwatch/internal/collector"
 	"github.com/AntoineOparin/netwatch/internal/collector/hostnet"
+	"github.com/AntoineOparin/netwatch/internal/collector/procnet"
 )
 
 // Set at build time: go build -ldflags "-X main.version=v0.1.0".
@@ -35,16 +36,22 @@ func main() {
 
 	log.Info("agent starting", "hub", *hubURL, "version", version)
 	err = agent.Run(ctx, agent.Config{
-		HubURL:  *hubURL,
-		IDFile:  *idFile,
-		Version: version,
-		Logger:  log,
-		Collectors: []collector.Collector{
-			hostnet.New(time.Second),
-		},
+		HubURL:     *hubURL,
+		IDFile:     *idFile,
+		Version:    version,
+		Logger:     log,
+		Collectors: collectors(),
 	})
 	if err != nil {
 		log.Error("agent stopped", "err", err)
 		os.Exit(1)
 	}
+}
+
+func collectors() []collector.Collector {
+	cs := []collector.Collector{hostnet.New(time.Second)}
+	if procnet.Supported() {
+		cs = append(cs, procnet.New())
+	}
+	return cs
 }
