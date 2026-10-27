@@ -6,6 +6,29 @@
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
+/* Chart colors, read by both CSS and the canvas charts (see features/latency).
+   Series slots 1-3 and status colors come from the validated dataviz palette. */
+:root {
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-critical: #d03b3b;
+  --chart-grid: #e5e7eb;
+  --chart-axis: #6b7280;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --chart-grid: #27272a;
+    --chart-axis: #9ca3af;
+  }
+}
+
 html,
 body {
   @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100;

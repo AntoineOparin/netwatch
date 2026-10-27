@@ -14,20 +14,41 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/AntoineOparin/netwatch/internal/collector"
+	"github.com/AntoineOparin/netwatch/internal/collector/probe"
 	"github.com/AntoineOparin/netwatch/internal/hub"
+	"github.com/AntoineOparin/netwatch/internal/series"
 	"github.com/AntoineOparin/netwatch/internal/webui"
 )
 
 func main() {
 	addr := flag.String("addr", ":8080", "listen address")
 	heartbeat := flag.Duration("heartbeat", 5*time.Second, "how often agents should check in")
+	retention := flag.Duration("retention", 15*time.Minute, "how much history to keep in memory")
+	probeInternet := flag.String("probe-internet", "1.1.1.1", "internet host to ping")
+	probeGateway := flag.String("probe-gateway", "", "router IP to ping (default: detected)")
+	probeISP := flag.String("probe-isp", "", `first ISP hop to ping (default: detected, "off" to skip)`)
+	probePrivileged := flag.Bool("probe-privileged", false, "use raw ICMP sockets (needs root/CAP_NET_RAW; for Linux without ping_group_range)")
 	flag.Parse()
 
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	server := hub.NewServer(hub.NewRegistry(), *heartbeat)
+	store := series.NewStore(*retention)
+	go collector.RunAll(ctx, log, store.Append,
+		probe.New(probe.Config{
+			Internet:   *probeInternet,
+			Gateway:    *probeGateway,
+			ISP:        *probeISP,
+			Interval:   time.Second,
+			Timeout:    time.Second,
+			Privileged: *probePrivileged,
+			Logger:     log.With("collector", "probe"),
+		}),
+	)
+
+	server := hub.NewServer(hub.NewRegistry(), store, *heartbeat)
 	srv := &http.Server{
 		Addr:              *addr,
 		Handler:           server.Handler(webui.Handler()),

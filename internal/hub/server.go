@@ -14,6 +14,7 @@ import (
 
 	netwatchv1 "github.com/AntoineOparin/netwatch/gen/netwatch/v1"
 	"github.com/AntoineOparin/netwatch/gen/netwatch/v1/netwatchv1connect"
+	"github.com/AntoineOparin/netwatch/internal/series"
 )
 
 // An agent counts as offline after missing this many heartbeats.
@@ -21,11 +22,12 @@ const missedHeartbeats = 3
 
 type Server struct {
 	registry          *Registry
+	store             *series.Store
 	heartbeatInterval time.Duration
 }
 
-func NewServer(registry *Registry, heartbeatInterval time.Duration) *Server {
-	return &Server{registry: registry, heartbeatInterval: heartbeatInterval}
+func NewServer(registry *Registry, store *series.Store, heartbeatInterval time.Duration) *Server {
+	return &Server{registry: registry, store: store, heartbeatInterval: heartbeatInterval}
 }
 
 // Handler mounts the Connect services and falls back to ui for every other

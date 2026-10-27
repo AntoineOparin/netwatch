@@ -14,6 +14,8 @@ A small home-network monitor I'm building to answer one question: **when my Xbox
               ingest -> store -> analysis -> dashboard (React Router SPA, embedded in the hub binary)
 ```
 
+![Overview: live latency to the router, the ISP and the internet, with a verdict](docs/screenshots/m2-overview.png)
+
 ## Stack
 
 - **Go**: agent and hub. Each is a single static binary that cross-compiles to macOS, Windows, Linux and Raspberry Pi.
@@ -39,12 +41,14 @@ go run ./cmd/hub &                # API on :8080
 cd web && bun run dev             # UI on :5173, proxies RPCs to :8080
 ```
 
+The hub pings your router, the first ISP hop and 1.1.1.1. Both are detected automatically; override them with `-probe-gateway`, `-probe-isp` (or `off`) and `-probe-internet`. On Linux, unprivileged ping needs `net.ipv4.ping_group_range` to include your group; otherwise run with `-probe-privileged` as root.
+
 Other targets: `make test`, `make check` (tests + vet + lint + typecheck), `make gen` (after editing `proto/`), `make cross` (agent builds for every OS).
 
 ## Roadmap
 
 - [x] **M1 Skeleton**: agents register and heartbeat, the hub lists them, and the dashboard is embedded in the binary
-- [ ] **M2 Lag probe**: RTT, jitter and loss to the gateway, the ISP and 1.1.1.1 (tells Wi-Fi problems apart from internet problems)
+- [x] **M2 Lag probe**: RTT, jitter and loss to the gateway, the ISP and 1.1.1.1 (tells Wi-Fi problems apart from internet problems)
 - [ ] **M3 Who's using bandwidth**: per-computer upload/download, stored as a time series
 - [ ] **M4 Lag explainer**: when latency spikes, show whose traffic spiked at the same moment
 - [ ] **M5 Every device on the LAN**: ARP/mDNS discovery, vendor lookup, the Xbox's own LAN ping

@@ -2,17 +2,90 @@
 // @generated from file netwatch/v1/dashboard.proto (package netwatch.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Duration, Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_duration, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file netwatch/v1/dashboard.proto.
  */
 export const file_netwatch_v1_dashboard: GenFile = /*@__PURE__*/
-  fileDesc("ChtuZXR3YXRjaC92MS9kYXNoYm9hcmQucHJvdG8SC25ldHdhdGNoLnYxIhMKEUxpc3RBZ2VudHNSZXF1ZXN0IjgKEkxpc3RBZ2VudHNSZXNwb25zZRIiCgZhZ2VudHMYASADKAsyEi5uZXR3YXRjaC52MS5BZ2VudCLVAQoFQWdlbnQSCgoCaWQYASABKAkSEAoIaG9zdG5hbWUYAiABKAkSCgoCb3MYAyABKAkSDAoEYXJjaBgEIAEoCRIVCg1hZ2VudF92ZXJzaW9uGAUgASgJEgsKA2lwcxgGIAMoCRIxCg1yZWdpc3RlcmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBItCglsYXN0X3NlZW4YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBm9ubGluZRgJIAEoCDJhChBEYXNoYm9hcmRTZXJ2aWNlEk0KCkxpc3RBZ2VudHMSHi5uZXR3YXRjaC52MS5MaXN0QWdlbnRzUmVxdWVzdBofLm5ldHdhdGNoLnYxLkxpc3RBZ2VudHNSZXNwb25zZUI+WjxnaXRodWIuY29tL0FudG9pbmVPcGFyaW4vbmV0d2F0Y2gvZ2VuL25ldHdhdGNoL3YxO25ldHdhdGNodjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChtuZXR3YXRjaC92MS9kYXNoYm9hcmQucHJvdG8SC25ldHdhdGNoLnYxIkEKE1dhdGNoTGF0ZW5jeVJlcXVlc3QSKgoHaGlzdG9yeRgBIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbiJBChRXYXRjaExhdGVuY3lSZXNwb25zZRIpCgZwb2ludHMYASADKAsyGS5uZXR3YXRjaC52MS5MYXRlbmN5UG9pbnQijgEKDExhdGVuY3lQb2ludBIqCgZ0YXJnZXQYASABKA4yGi5uZXR3YXRjaC52MS5MYXRlbmN5VGFyZ2V0EgwKBGFkZHIYAiABKAkSJgoCYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBnJ0dF9tcxgEIAEoARIMCgRsb3N0GAUgASgIIhMKEUxpc3RBZ2VudHNSZXF1ZXN0IjgKEkxpc3RBZ2VudHNSZXNwb25zZRIiCgZhZ2VudHMYASADKAsyEi5uZXR3YXRjaC52MS5BZ2VudCLVAQoFQWdlbnQSCgoCaWQYASABKAkSEAoIaG9zdG5hbWUYAiABKAkSCgoCb3MYAyABKAkSDAoEYXJjaBgEIAEoCRIVCg1hZ2VudF92ZXJzaW9uGAUgASgJEgsKA2lwcxgGIAMoCRIxCg1yZWdpc3RlcmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBItCglsYXN0X3NlZW4YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBm9ubGluZRgJIAEoCCqAAQoNTGF0ZW5jeVRhcmdldBIeChpMQVRFTkNZX1RBUkdFVF9VTlNQRUNJRklFRBAAEhoKFkxBVEVOQ1lfVEFSR0VUX0dBVEVXQVkQARIWChJMQVRFTkNZX1RBUkdFVF9JU1AQAhIbChdMQVRFTkNZX1RBUkdFVF9JTlRFUk5FVBADMrgBChBEYXNoYm9hcmRTZXJ2aWNlEk0KCkxpc3RBZ2VudHMSHi5uZXR3YXRjaC52MS5MaXN0QWdlbnRzUmVxdWVzdBofLm5ldHdhdGNoLnYxLkxpc3RBZ2VudHNSZXNwb25zZRJVCgxXYXRjaExhdGVuY3kSIC5uZXR3YXRjaC52MS5XYXRjaExhdGVuY3lSZXF1ZXN0GiEubmV0d2F0Y2gudjEuV2F0Y2hMYXRlbmN5UmVzcG9uc2UwAUI+WjxnaXRodWIuY29tL0FudG9pbmVPcGFyaW4vbmV0d2F0Y2gvZ2VuL25ldHdhdGNoL3YxO25ldHdhdGNodjFiBnByb3RvMw", [file_google_protobuf_duration, file_google_protobuf_timestamp]);
+
+/**
+ * @generated from message netwatch.v1.WatchLatencyRequest
+ */
+export type WatchLatencyRequest = Message<"netwatch.v1.WatchLatencyRequest"> & {
+  /**
+   * @generated from field: google.protobuf.Duration history = 1;
+   */
+  history?: Duration | undefined;
+};
+
+/**
+ * Describes the message netwatch.v1.WatchLatencyRequest.
+ * Use `create(WatchLatencyRequestSchema)` to create a new message.
+ */
+export const WatchLatencyRequestSchema: GenMessage<WatchLatencyRequest> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 0);
+
+/**
+ * @generated from message netwatch.v1.WatchLatencyResponse
+ */
+export type WatchLatencyResponse = Message<"netwatch.v1.WatchLatencyResponse"> & {
+  /**
+   * @generated from field: repeated netwatch.v1.LatencyPoint points = 1;
+   */
+  points: LatencyPoint[];
+};
+
+/**
+ * Describes the message netwatch.v1.WatchLatencyResponse.
+ * Use `create(WatchLatencyResponseSchema)` to create a new message.
+ */
+export const WatchLatencyResponseSchema: GenMessage<WatchLatencyResponse> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 1);
+
+/**
+ * @generated from message netwatch.v1.LatencyPoint
+ */
+export type LatencyPoint = Message<"netwatch.v1.LatencyPoint"> & {
+  /**
+   * @generated from field: netwatch.v1.LatencyTarget target = 1;
+   */
+  target: LatencyTarget;
+
+  /**
+   * @generated from field: string addr = 2;
+   */
+  addr: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp at = 3;
+   */
+  at?: Timestamp | undefined;
+
+  /**
+   * Round-trip time. Unset when the ping was lost.
+   *
+   * @generated from field: double rtt_ms = 4;
+   */
+  rttMs: number;
+
+  /**
+   * @generated from field: bool lost = 5;
+   */
+  lost: boolean;
+};
+
+/**
+ * Describes the message netwatch.v1.LatencyPoint.
+ * Use `create(LatencyPointSchema)` to create a new message.
+ */
+export const LatencyPointSchema: GenMessage<LatencyPoint> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 2);
 
 /**
  * @generated from message netwatch.v1.ListAgentsRequest
@@ -25,7 +98,7 @@ export type ListAgentsRequest = Message<"netwatch.v1.ListAgentsRequest"> & {
  * Use `create(ListAgentsRequestSchema)` to create a new message.
  */
 export const ListAgentsRequestSchema: GenMessage<ListAgentsRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 0);
+  messageDesc(file_netwatch_v1_dashboard, 3);
 
 /**
  * @generated from message netwatch.v1.ListAgentsResponse
@@ -42,7 +115,7 @@ export type ListAgentsResponse = Message<"netwatch.v1.ListAgentsResponse"> & {
  * Use `create(ListAgentsResponseSchema)` to create a new message.
  */
 export const ListAgentsResponseSchema: GenMessage<ListAgentsResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 1);
+  messageDesc(file_netwatch_v1_dashboard, 4);
 
 /**
  * @generated from message netwatch.v1.Agent
@@ -101,7 +174,46 @@ export type Agent = Message<"netwatch.v1.Agent"> & {
  * Use `create(AgentSchema)` to create a new message.
  */
 export const AgentSchema: GenMessage<Agent> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 2);
+  messageDesc(file_netwatch_v1_dashboard, 5);
+
+/**
+ * Where along the path to the internet a probe measures.
+ *
+ * @generated from enum netwatch.v1.LatencyTarget
+ */
+export enum LatencyTarget {
+  /**
+   * @generated from enum value: LATENCY_TARGET_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * Your router.
+   *
+   * @generated from enum value: LATENCY_TARGET_GATEWAY = 1;
+   */
+  GATEWAY = 1,
+
+  /**
+   * The first router past yours, inside the ISP.
+   *
+   * @generated from enum value: LATENCY_TARGET_ISP = 2;
+   */
+  ISP = 2,
+
+  /**
+   * A well-known host on the internet, e.g. 1.1.1.1.
+   *
+   * @generated from enum value: LATENCY_TARGET_INTERNET = 3;
+   */
+  INTERNET = 3,
+}
+
+/**
+ * Describes the enum netwatch.v1.LatencyTarget.
+ */
+export const LatencyTargetSchema: GenEnum<LatencyTarget> = /*@__PURE__*/
+  enumDesc(file_netwatch_v1_dashboard, 0);
 
 /**
  * DashboardService is what the web UI calls on the hub.
@@ -116,6 +228,17 @@ export const DashboardService: GenService<{
     methodKind: "unary";
     input: typeof ListAgentsRequestSchema;
     output: typeof ListAgentsResponseSchema;
+  },
+  /**
+   * Streams latency probe results: first everything within `history`, then
+   * each new point as it is measured.
+   *
+   * @generated from rpc netwatch.v1.DashboardService.WatchLatency
+   */
+  watchLatency: {
+    methodKind: "server_streaming";
+    input: typeof WatchLatencyRequestSchema;
+    output: typeof WatchLatencyResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_netwatch_v1_dashboard, 0);

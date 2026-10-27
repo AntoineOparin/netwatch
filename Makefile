@@ -27,7 +27,7 @@ test:
 
 check: test
 	go vet ./...
-	cd web && bun run lint && bun run typecheck
+	cd web && bun run lint && bun run typecheck && bun run test
 
 # The agent has to run on everyone's computer, so make sure it builds for all of them.
 cross:

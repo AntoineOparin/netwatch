@@ -36,11 +36,17 @@ const (
 	// DashboardServiceListAgentsProcedure is the fully-qualified name of the DashboardService's
 	// ListAgents RPC.
 	DashboardServiceListAgentsProcedure = "/netwatch.v1.DashboardService/ListAgents"
+	// DashboardServiceWatchLatencyProcedure is the fully-qualified name of the DashboardService's
+	// WatchLatency RPC.
+	DashboardServiceWatchLatencyProcedure = "/netwatch.v1.DashboardService/WatchLatency"
 )
 
 // DashboardServiceClient is a client for the netwatch.v1.DashboardService service.
 type DashboardServiceClient interface {
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
+	// Streams latency probe results: first everything within `history`, then
+	// each new point as it is measured.
+	WatchLatency(context.Context, *connect.Request[v1.WatchLatencyRequest]) (*connect.ServerStreamForClient[v1.WatchLatencyResponse], error)
 }
 
 // NewDashboardServiceClient constructs a client for the netwatch.v1.DashboardService service. By
@@ -60,12 +66,19 @@ func NewDashboardServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(dashboardServiceMethods.ByName("ListAgents")),
 			connect.WithClientOptions(opts...),
 		),
+		watchLatency: connect.NewClient[v1.WatchLatencyRequest, v1.WatchLatencyResponse](
+			httpClient,
+			baseURL+DashboardServiceWatchLatencyProcedure,
+			connect.WithSchema(dashboardServiceMethods.ByName("WatchLatency")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // dashboardServiceClient implements DashboardServiceClient.
 type dashboardServiceClient struct {
-	listAgents *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
+	listAgents   *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
+	watchLatency *connect.Client[v1.WatchLatencyRequest, v1.WatchLatencyResponse]
 }
 
 // ListAgents calls netwatch.v1.DashboardService.ListAgents.
@@ -73,9 +86,17 @@ func (c *dashboardServiceClient) ListAgents(ctx context.Context, req *connect.Re
 	return c.listAgents.CallUnary(ctx, req)
 }
 
+// WatchLatency calls netwatch.v1.DashboardService.WatchLatency.
+func (c *dashboardServiceClient) WatchLatency(ctx context.Context, req *connect.Request[v1.WatchLatencyRequest]) (*connect.ServerStreamForClient[v1.WatchLatencyResponse], error) {
+	return c.watchLatency.CallServerStream(ctx, req)
+}
+
 // DashboardServiceHandler is an implementation of the netwatch.v1.DashboardService service.
 type DashboardServiceHandler interface {
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
+	// Streams latency probe results: first everything within `history`, then
+	// each new point as it is measured.
+	WatchLatency(context.Context, *connect.Request[v1.WatchLatencyRequest], *connect.ServerStream[v1.WatchLatencyResponse]) error
 }
 
 // NewDashboardServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -91,10 +112,18 @@ func NewDashboardServiceHandler(svc DashboardServiceHandler, opts ...connect.Han
 		connect.WithSchema(dashboardServiceMethods.ByName("ListAgents")),
 		connect.WithHandlerOptions(opts...),
 	)
+	dashboardServiceWatchLatencyHandler := connect.NewServerStreamHandler(
+		DashboardServiceWatchLatencyProcedure,
+		svc.WatchLatency,
+		connect.WithSchema(dashboardServiceMethods.ByName("WatchLatency")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/netwatch.v1.DashboardService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DashboardServiceListAgentsProcedure:
 			dashboardServiceListAgentsHandler.ServeHTTP(w, r)
+		case DashboardServiceWatchLatencyProcedure:
+			dashboardServiceWatchLatencyHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -106,4 +135,8 @@ type UnimplementedDashboardServiceHandler struct{}
 
 func (UnimplementedDashboardServiceHandler) ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.ListAgents is not implemented"))
+}
+
+func (UnimplementedDashboardServiceHandler) WatchLatency(context.Context, *connect.Request[v1.WatchLatencyRequest], *connect.ServerStream[v1.WatchLatencyResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.WatchLatency is not implemented"))
 }

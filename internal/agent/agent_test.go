@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/AntoineOparin/netwatch/internal/hub"
+	"github.com/AntoineOparin/netwatch/internal/series"
 )
 
 // TestReRegisterAfterHubRestart runs a real hub in-process, then swaps it for
@@ -22,7 +23,7 @@ func TestReRegisterAfterHubRestart(t *testing.T) {
 	newHub := func() http.Handler {
 		reg := hub.NewRegistry()
 		current.Store(reg)
-		return hub.NewServer(reg, 20*time.Millisecond).Handler(http.NotFoundHandler())
+		return hub.NewServer(reg, series.NewStore(time.Minute), 20*time.Millisecond).Handler(http.NotFoundHandler())
 	}
 	var handler atomic.Pointer[http.Handler]
 	h := newHub()

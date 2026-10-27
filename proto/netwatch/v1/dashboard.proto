@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package netwatch.v1;
 
+import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/AntoineOparin/netwatch/gen/netwatch/v1;netwatchv1";
@@ -9,6 +10,37 @@ option go_package = "github.com/AntoineOparin/netwatch/gen/netwatch/v1;netwatchv
 // DashboardService is what the web UI calls on the hub.
 service DashboardService {
   rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse);
+  // Streams latency probe results: first everything within `history`, then
+  // each new point as it is measured.
+  rpc WatchLatency(WatchLatencyRequest) returns (stream WatchLatencyResponse);
+}
+
+message WatchLatencyRequest {
+  google.protobuf.Duration history = 1;
+}
+
+message WatchLatencyResponse {
+  repeated LatencyPoint points = 1;
+}
+
+// Where along the path to the internet a probe measures.
+enum LatencyTarget {
+  LATENCY_TARGET_UNSPECIFIED = 0;
+  // Your router.
+  LATENCY_TARGET_GATEWAY = 1;
+  // The first router past yours, inside the ISP.
+  LATENCY_TARGET_ISP = 2;
+  // A well-known host on the internet, e.g. 1.1.1.1.
+  LATENCY_TARGET_INTERNET = 3;
+}
+
+message LatencyPoint {
+  LatencyTarget target = 1;
+  string addr = 2;
+  google.protobuf.Timestamp at = 3;
+  // Round-trip time. Unset when the ping was lost.
+  double rtt_ms = 4;
+  bool lost = 5;
 }
 
 message ListAgentsRequest {}
