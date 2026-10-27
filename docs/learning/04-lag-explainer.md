@@ -17,6 +17,10 @@
 - While an incident is open, it's compared against the baseline from *before* it started, so a long incident can't raise its own baseline.
 - The reported start and end are the first and last ping that was *itself* slow. The smoothing only decides when the incident is over. My first version used the smoothed times, which added a quiet second at each end and diluted the suspect's numbers. A test caught it.
 
+### Silence isn't lag
+
+Recording the README demo, a laptop on battery went into idle sleep for 133 seconds in the middle of an incident. When it woke, the open incident had been stretched across the whole gap: a "144-second" lag spell with no measurements in it at all. Now, if internet pings stop for more than 10 seconds (sleep, a hub restart), any open incident ends at its last slow ping before the gap. Uptime already handled this correctly, because it only counts time the hub was actually pinging.
+
 ### Local or upstream?
 
 If the router's ping (median during the incident) was also well above *its* baseline, or 20% of its pings were lost, the incident is **local**: Wi-Fi or the home network. Otherwise it's **upstream**, and that's where "someone is using all the bandwidth" becomes the likely story.

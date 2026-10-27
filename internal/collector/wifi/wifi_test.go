@@ -6,29 +6,6 @@ import (
 	"testing"
 )
 
-func TestParseDarwin(t *testing.T) {
-	// Trimmed from a real `system_profiler SPAirPortDataType -json` (macOS 15).
-	data := []byte(`{"SPAirPortDataType":[{"spairport_airport_interfaces":[
-		{"_name":"en0","spairport_status_information":"spairport_status_connected",
-		 "spairport_current_network_information":{"_name":"<redacted>",
-		   "spairport_network_channel":"153 (5GHz, 80MHz)","spairport_network_rate":520,
-		   "spairport_signal_noise":"-68 dBm / -95 dBm"}},
-		{"_name":"awdl0","spairport_current_network_information":{"spairport_network_type":"x"}}
-	]}]}`)
-	r, err := parseDarwin(data)
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := reading{signalDBm: -68, noiseDBm: -95, txRateMbps: 520, bandGHz: 5, channel: 153}
-	if r != want {
-		t.Fatalf("got %+v, want %+v", r, want)
-	}
-
-	if _, err := parseDarwin([]byte(`{"SPAirPortDataType":[{"spairport_airport_interfaces":[{"_name":"en0"}]}]}`)); !errors.Is(err, errNotConnected) {
-		t.Errorf("Wi-Fi off: err = %v, want errNotConnected", err)
-	}
-}
-
 func TestParseWindows(t *testing.T) {
 	english := `
 There is 1 interface on the system:

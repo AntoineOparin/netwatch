@@ -10,13 +10,15 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    # macOS, so the macOS agent can be built with cgo (it reads Wi-Fi through
+    # CoreWLAN). Linux and Windows binaries are pure Go and cross-compile.
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0 # for `git describe` in the version string
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
@@ -34,7 +36,7 @@ jobs:
       - name: Build
         run: make release VERSION=${{ github.ref_name }}
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: dist/*
           generate_release_notes: true

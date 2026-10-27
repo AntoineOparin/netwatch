@@ -6,7 +6,9 @@
 
 I built NetWatch to answer one question: *when my Xbox lags, is it the Wi-Fi, the internet, or someone in the house maxing out the connection?* It watches the connection from inside the home network, catches lag as it happens, and says what was busy at that moment.
 
-![A lag incident: internet ping rose to 81 ms while the Mac was uploading 23.5 Mbps](docs/screenshots/m4-incident.png)
+![A big upload starts: ping to the ISP and the internet climbs while the router stays flat, and NetWatch names the uploader](docs/screenshots/demo.gif)
+
+<sub>Recorded on my home network: an upload from my Mac pushes internet ping from 19 ms to 45 ms, and NetWatch explains it. (Captured with `-lag-rise 15`, the sensitive setting; the default only flags rises of 30 ms or more, and my modem kept this one smaller than that.)</sub>
 
 ## What it tells you
 
@@ -16,7 +18,14 @@ I built NetWatch to answer one question: *when my Xbox lags, is it the Wi-Fi, th
 - **Who's using the internet right now:** per computer, and per app on macOS, plus each computer's Wi-Fi signal strength.
 - **Every device on the network**, the Xbox, phones and TV included: name, maker, and an hour of its ping next to the router's, which shows whether its own Wi-Fi link is the weak spot.
 
-![Who's using the internet: per-computer download and upload](docs/screenshots/m3-throughput.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/overview-dark.png">
+  <img alt="The overview: connection verdict, ping to each hop, ping over time with lag incidents, recent lag explained, and who's using the internet" src="docs/screenshots/overview-light.png">
+</picture>
+
+| Lag incidents, uptime and outages | Learn: the concepts, for non-experts |
+|---|---|
+| ![Lag incidents page with uptime summary](docs/screenshots/incidents.png) | ![Learn page with how your data travels](docs/screenshots/learn.png) |
 
 ## Quick start
 

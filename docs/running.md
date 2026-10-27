@@ -111,4 +111,5 @@ A console window opens at log-in; minimize it. `schtasks /Delete /TN "NetWatch a
 |---|---|---|---|
 | Agent: computer's download/upload | ✓ | ✓ | ✓ |
 | Agent: per-app breakdown | ✓ (`nettop`) | needs admin tracing (ETW), not built yet | needs eBPF, not built yet |
+| Agent: Wi-Fi signal | ✓ (CoreWLAN; the release builds include it) | ✓ (`netsh`) | ✓ signal only |
 | Hub | ✓ | not supported (no unprivileged ping) | ✓ |

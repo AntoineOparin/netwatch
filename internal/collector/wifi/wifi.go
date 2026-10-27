@@ -4,15 +4,17 @@
 //
 // Each OS exposes this differently, all without admin rights:
 //
-//	macOS    system_profiler SPAirPortDataType -json
+//	macOS    CoreWLAN (needs cgo; see wifi_darwin_cgo.go)
 //	Windows  netsh wlan show interfaces (English or French output)
 //	Linux    /proc/net/wireless (signal only)
+//
+// Whatever is used must not scan for networks: a scan takes the radio off
+// the current channel and causes the very lag spikes NetWatch measures.
 package wifi
 
 import (
 	"bufio"
 	"context"
-	"encoding/json"
 	"errors"
 	"regexp"
 	"strconv"
@@ -97,57 +99,19 @@ func samples(r reading, at time.Time) []collector.Sample {
 	return out
 }
 
-var (
-	dbmPair   = regexp.MustCompile(`(-?\d+)\s*dBm\s*/\s*(-?\d+)\s*dBm`)
-	chanBand  = regexp.MustCompile(`^(\d+)\s*\((\d+(?:\.\d+)?)\s*GHz`)
-	firstNumb = regexp.MustCompile(`-?\d+(?:[.,]\d+)?`)
-)
+var firstNumb = regexp.MustCompile(`-?\d+(?:[.,]\d+)?`)
 
-// parseDarwin reads `system_profiler SPAirPortDataType -json`. The current
-// network's name is redacted without location permission, but the signal
-// numbers aren't.
-func parseDarwin(data []byte) (reading, error) {
-	var doc struct {
-		Items []struct {
-			Interfaces []struct {
-				Current *struct {
-					SignalNoise string `json:"spairport_signal_noise"`
-					Channel     string `json:"spairport_network_channel"`
-					Rate        any    `json:"spairport_network_rate"`
-				} `json:"spairport_current_network_information"`
-			} `json:"spairport_airport_interfaces"`
-		} `json:"SPAirPortDataType"`
+// bandGHz turns CoreWLAN's CWChannelBand into GHz.
+func bandGHz(band int) float64 {
+	switch band {
+	case 1:
+		return 2.4
+	case 2:
+		return 5
+	case 3:
+		return 6
 	}
-	if err := json.Unmarshal(data, &doc); err != nil {
-		return reading{}, err
-	}
-	for _, item := range doc.Items {
-		for _, ifc := range item.Interfaces {
-			cur := ifc.Current
-			if cur == nil || cur.SignalNoise == "" {
-				continue
-			}
-			var r reading
-			if m := dbmPair.FindStringSubmatch(cur.SignalNoise); m != nil {
-				r.signalDBm, _ = strconv.ParseFloat(m[1], 64)
-				r.noiseDBm, _ = strconv.ParseFloat(m[2], 64)
-			}
-			if m := chanBand.FindStringSubmatch(cur.Channel); m != nil {
-				r.channel, _ = strconv.Atoi(m[1])
-				r.bandGHz, _ = strconv.ParseFloat(m[2], 64)
-			}
-			switch v := cur.Rate.(type) {
-			case float64:
-				r.txRateMbps = v
-			case string:
-				r.txRateMbps, _ = strconv.ParseFloat(v, 64)
-			}
-			if r.signalDBm != 0 {
-				return r, nil
-			}
-		}
-	}
-	return reading{}, errNotConnected
+	return 0
 }
 
 // parseWindows reads `netsh wlan show interfaces`. Labels are localized, so

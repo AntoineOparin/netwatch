@@ -152,6 +152,29 @@ func TestOutage(t *testing.T) {
 	}
 }
 
+func TestSleepGapEndsIncident(t *testing.T) {
+	d := NewDetector(DefaultConfig())
+	got := run(d, concat(
+		repeat(60, second{gateway: 4, internet: 20}),
+		repeat(4, second{gateway: 4, internet: 200}), // lag starts...
+	))
+	if len(got) != 1 || !got[0].End.IsZero() {
+		t.Fatalf("before the gap: got %+v, want one open incident", got)
+	}
+	inc := got[0]
+
+	// ...then the computer sleeps for two minutes, and wakes to normal pings.
+	wake := t0.Add(64*time.Second + 2*time.Minute)
+	d.Observe(collector.Sample{Device: "hub", Metric: probe.MetricRTT, Labels: map[string]string{"target": probe.TargetInternet}, Value: 20, At: wake})
+
+	if inc.End.IsZero() || !inc.Final {
+		t.Fatal("incident should be closed and final after the gap")
+	}
+	if dur := inc.End.Sub(inc.Start); dur > 5*time.Second {
+		t.Errorf("incident lasted %v; it must not stretch across the 2-minute gap", dur)
+	}
+}
+
 func TestNoBaselineNoIncident(t *testing.T) {
 	// Lag right after startup: there's nothing normal to compare against yet.
 	if got := run(NewDetector(DefaultConfig()), repeat(10, second{gateway: 4, internet: 300})); len(got) != 0 {

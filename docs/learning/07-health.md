@@ -18,11 +18,27 @@ Wi-Fi signal is measured in dBm: decibels relative to one milliwatt. Received Wi
 | −67 dBm | The usual minimum for smooth calls and gaming |
 | −75 dBm | Weak: lag, retries, dropouts |
 
-The first reading on my Mac: **−68 dBm on 5 GHz, link speed 520 Mbps**, so "fair". Each OS reports this differently, all without admin rights:
+Each OS reports this differently, all without admin rights:
 
-- **macOS:** `system_profiler SPAirPortDataType -json`. The network name is hidden without location permission, but the numbers aren't.
+- **macOS:** Apple's CoreWLAN framework (`CWWiFiClient`), called from Go through cgo and a few lines of Objective-C. It reads the current connection's numbers from the driver. My Mac: **−47 dBm on 5 GHz channel 153, 866 Mbps link**, which is excellent. Builds without cgo report no Wi-Fi, for the reason below.
 - **Windows:** `netsh wlan show interfaces` reports a percentage, which Microsoft maps linearly from −100 dBm (0%) to −50 dBm (100%). The labels are localized, so the parser accepts English and French ("Canal", "Bande", "2,4 GHz"), with tests for both.
 - **Linux:** `/proc/net/wireless`.
+
+### The observer effect: measuring Wi-Fi caused lag
+
+The first macOS version used `system_profiler SPAirPortDataType` every 30 seconds, and it reported my signal as a "fair" −68 dBm. Recording the README demo, every lag incident turned out to arrive **exactly 30 seconds apart**, starting 29 seconds after the agent started. That's not Wi-Fi noise; that's a timer.
+
+`system_profiler` also lists *nearby* networks, so each call triggers a Wi-Fi scan, and while scanning, the radio leaves your network's channel for a moment. A direct test pinging the router 5 times a second:
+
+| Router ping | Average | Worst | Over 50 ms |
+|---|---|---|---|
+| While `system_profiler` runs | 21.9 ms | 138 ms | 9 |
+| Nothing running | 5.5 ms | 8 ms | 0 |
+| Reading CoreWLAN once a second | 6.4 ms | 16 ms | 0 |
+
+So NetWatch was causing the spikes it then reported as lag, and the "fair" reading was probably taken mid-scan. CoreWLAN reads the current link without scanning. The rule now sits in the package comment: whatever reads Wi-Fi must never scan.
+
+Two lessons: a monitor has to be checked for its own effect on what it measures, and a suspiciously regular pattern is a clue worth chasing.
 
 ### A drop is not a slowdown
 

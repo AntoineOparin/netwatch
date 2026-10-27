@@ -79,6 +79,10 @@ type Config struct {
 	MaxSuspects int
 	// This many internet pings lost in a row make an incident an outage.
 	OutageAfter int
+	// A silence longer than this between internet pings means the hub
+	// wasn't measuring (the computer slept, the hub restarted). An open
+	// incident is closed at the gap rather than stretched across it.
+	MaxGap time.Duration
 }
 
 func DefaultConfig() Config {
@@ -95,6 +99,7 @@ func DefaultConfig() Config {
 		MinDownBps:  625_000, // 5 Mbps
 		MaxSuspects: 3,
 		OutageAfter: 5,
+		MaxGap:      10 * time.Second,
 	}
 }
 
@@ -118,6 +123,8 @@ type Detector struct {
 	pending *Incident
 	// Internet pings lost in a row, right now.
 	lostRun int
+	// When the previous internet ping was sent.
+	lastInternet time.Time
 }
 
 func NewDetector(cfg Config) *Detector {
@@ -151,13 +158,18 @@ func (d *Detector) Observe(s collector.Sample) []*Incident {
 		case probe.TargetGateway:
 			d.gateway = d.keep(append(d.gateway, point{s.At, s.Value}), s.At)
 		case probe.TargetInternet:
+			var interrupted []*Incident
+			if !d.lastInternet.IsZero() && s.At.Sub(d.lastInternet) > d.cfg.MaxGap {
+				interrupted = d.interrupt()
+			}
+			d.lastInternet = s.At
 			d.internet = d.keep(append(d.internet, point{s.At, s.Value}), s.At)
 			if math.IsNaN(s.Value) {
 				d.lostRun++
 			} else {
 				d.lostRun = 0
 			}
-			return d.evaluate(s.At)
+			return append(interrupted, d.evaluate(s.At)...)
 		}
 	}
 	return nil
@@ -171,6 +183,28 @@ func (d *Detector) keep(points []point, now time.Time) []point {
 		i++
 	}
 	return points[i:]
+}
+
+// interrupt handles a gap in measurement: an open incident ends at its last
+// slow ping before the gap and is finalized with what was known then, and so
+// is one still waiting out its grace period.
+func (d *Detector) interrupt() []*Incident {
+	var changed []*Incident
+	if p := d.pending; p != nil {
+		p.Suspects = d.suspects(p.Start, p.End)
+		p.Final = true
+		changed = append(changed, p)
+		d.pending = nil
+	}
+	if inc := d.open; inc != nil {
+		d.update(inc, d.lastSlowPing)
+		inc.End = d.lastSlowPing
+		inc.Final = true
+		changed = append(changed, inc)
+		d.open = nil
+	}
+	d.lostRun = 0
+	return changed
 }
 
 // evaluate runs once per internet ping.

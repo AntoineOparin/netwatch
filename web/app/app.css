@@ -59,6 +59,15 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Tailwind's reset gives buttons the arrow cursor; anything clickable should
+   show the hand. Utilities (e.g. cursor-help on info tips) still win. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
 html,
 body {
   @apply bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100;

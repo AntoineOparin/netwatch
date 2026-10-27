@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import type uPlot from "uplot";
 import "uplot/dist/uPlot.min.css";
 
@@ -26,6 +32,10 @@ interface Props {
   // Time ranges (epoch ms) to shade behind the lines, e.g. lag incidents.
   highlights?: Highlight[];
   height?: number;
+  // Drag across the chart to zoom into that stretch (the y axis rescales to
+  // what's visible); double-click or "Reset zoom" to go back. Off for live
+  // overview charts, whose window is set by the page.
+  zoomable?: boolean;
 }
 
 export interface Highlight {
@@ -101,7 +111,18 @@ export function TimeSeriesChart({
   markMissing = false,
   highlights = NO_HIGHLIGHTS,
   height = 240,
+  zoomable = false,
 }: Props) {
+  // The zoomed x range, in seconds. A ref so data refreshes (which re-run
+  // auto-ranging) keep the zoom; state only drives the Reset button.
+  const zoom = useRef<{ min: number; max: number } | null>(null);
+  const [zoomed, setZoomed] = useState(false);
+  const resetZoom = () => {
+    zoom.current = null;
+    setZoomed(false);
+    const u = plot.current;
+    if (u) u.setData(u.data, true);
+  };
   const container = useRef<HTMLDivElement>(null);
   const plot = useRef<uPlot | null>(null);
   const aligned = useMemo(() => align(series), [series]);
@@ -139,12 +160,18 @@ export function TimeSeriesChart({
           cursor: {
             y: false,
             points: { size: 8 },
-            // No drag-to-zoom: the window is fixed by the page's time
-            // picker, and a zoom would fight it. Hovering shows values.
-            drag: { x: false, y: false, setScale: false },
+            // uPlot's own drag-zoom would fight the fixed window, so zooming
+            // (when enabled) is handled in the setSelect hook below.
+            drag: { x: zoomable, y: false, setScale: false },
           },
           scales: {
-            x: { time: true, range: (_u, _min, max) => [max - windowSec, max] },
+            x: {
+              time: true,
+              range: (_u, _min, max) =>
+                zoom.current
+                  ? [zoom.current.min, zoom.current.max]
+                  : [max - windowSec, max],
+            },
             y: {
               range: (_u, _min, max) => [0, Math.max(yFloor, max * 1.15)],
             },
@@ -174,6 +201,23 @@ export function TimeSeriesChart({
             })),
           ],
           hooks: {
+            init: [
+              (u) => {
+                if (zoomable) u.over.addEventListener("dblclick", resetZoom);
+              },
+            ],
+            // A finished drag: zoom into the selected stretch.
+            setSelect: [
+              (u) => {
+                if (!zoomable || u.select.width < 8) return;
+                const min = u.posToVal(u.select.left, "x");
+                const max = u.posToVal(u.select.left + u.select.width, "x");
+                u.setSelect({ left: 0, top: 0, width: 0, height: 0 }, false);
+                zoom.current = { min, max };
+                setZoomed(true);
+                u.setData(u.data, true);
+              },
+            ],
             // drawClear runs before the series, so bands sit behind lines.
             drawClear: [
               (u) => drawHighlights(u, latest.current.highlights, warning),
@@ -201,14 +245,33 @@ export function TimeSeriesChart({
       observer?.disconnect();
       plot.current?.destroy();
       plot.current = null;
+      // A new window (or a rebuild) starts zoomed out.
+      zoom.current = null;
+      setZoomed(false);
     };
-  }, [scheme, seriesKey, windowMs, yFloor, markMissing, height]);
+  }, [scheme, seriesKey, windowMs, yFloor, markMissing, height, zoomable]);
 
   useEffect(() => {
     plot.current?.setData(aligned.columns);
   }, [aligned]);
 
-  return <div ref={container} className="relative w-full" />;
+  return (
+    <div className="relative">
+      <div
+        ref={container}
+        className={`relative w-full ${zoomable ? "cursor-crosshair select-none" : ""}`}
+      />
+      {zoomed && (
+        <button
+          type="button"
+          onClick={resetZoom}
+          className="absolute top-1 right-1 z-10 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-zinc-700 shadow-sm ring-1 ring-zinc-950/10 backdrop-blur transition hover:bg-zinc-100 hover:text-zinc-900 active:scale-[0.97] dark:bg-zinc-900/90 dark:text-zinc-200 dark:ring-white/10 dark:hover:bg-zinc-800 dark:hover:text-white"
+        >
+          Reset zoom
+        </button>
+      )}
+    </div>
+  );
 }
 
 function timeTick(sec: number) {

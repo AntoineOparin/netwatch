@@ -9,6 +9,10 @@ LDFLAGS := -s -w -X main.version=$(VERSION)
 AGENT_PLATFORMS := darwin/arm64 darwin/amd64 windows/amd64 windows/arm64 linux/amd64 linux/arm64
 HUB_PLATFORMS := darwin/arm64 darwin/amd64 linux/amd64 linux/arm64
 
+# The macOS agent reads Wi-Fi through CoreWLAN, which needs cgo, which needs
+# a Mac to build on. Elsewhere it's built without cgo and reports no Wi-Fi.
+HOST_OS := $(shell go env GOHOSTOS)
+
 .PHONY: all gen web hub agent test check cross release clean
 
 all: hub agent
@@ -43,13 +47,14 @@ cross:
 	@mkdir -p dist
 	@for p in $(AGENT_PLATFORMS); do \
 		os=$${p%/*}; arch=$${p#*/}; ext=; [ $$os = windows ] && ext=.exe; \
-		echo "agent $$os/$$arch"; \
-		GOOS=$$os GOARCH=$$arch go build -ldflags "$(LDFLAGS)" -o dist/netwatch-agent-$$os-$$arch$$ext ./cmd/agent || exit 1; \
+		cgo=0; [ $$os = darwin ] && [ $(HOST_OS) = darwin ] && cgo=1; \
+		echo "agent $$os/$$arch (cgo=$$cgo)"; \
+		CGO_ENABLED=$$cgo GOOS=$$os GOARCH=$$arch go build -ldflags "$(LDFLAGS)" -o dist/netwatch-agent-$$os-$$arch$$ext ./cmd/agent || exit 1; \
 	done
 	@for p in $(HUB_PLATFORMS); do \
 		os=$${p%/*}; arch=$${p#*/}; \
 		echo "hub   $$os/$$arch"; \
-		GOOS=$$os GOARCH=$$arch go build -ldflags "$(LDFLAGS)" -o dist/netwatch-hub-$$os-$$arch ./cmd/hub || exit 1; \
+		CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -ldflags "$(LDFLAGS)" -o dist/netwatch-hub-$$os-$$arch ./cmd/hub || exit 1; \
 	done
 
 release: web cross

@@ -46,6 +46,10 @@ pty:    header at 44.18, 45.18, 46.18           (one per second)
 
 C programs buffer their output in 4–16 KB chunks when writing to a pipe, and flush line by line only when writing to a terminal. So `nettop` now runs under `script -q /dev/null`, which gives it a pseudo-terminal. Side effects to clean up: a `\r` on every line and an echoed `^D` at the start (`cleanLine`, with a test). After the fix, curl showed up correctly: an average of 4.9 Mbps over the minute, which matches 37 MB in 60 s, and a peak of 21.4 Mbps.
 
+### Loopback traffic isn't internet traffic
+
+Recording the README demo surfaced a second bug. A lag incident blamed the app **"hub"**, NetWatch's own hub, which never touches the internet. It was serving the dashboard to a browser over `localhost`, and `nettop` counts every interface by default, loopback included. `-t external` limits it to real network interfaces. The per-computer totals were never affected, because they only read the uplink interface.
+
 ### Rates vs volumes
 
 Agents send *rates* every 2 seconds, and only for busy apps. To rank apps over a minute, the hub turns them back into data volume (rate × 2 s per sample, with missing samples counted as zero) and divides by the window. That's why `procnet.Interval` is an exported constant: both sides agree on it. Apps averaging under 0.05 Mbps are hidden as chatter.

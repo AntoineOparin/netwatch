@@ -35,6 +35,10 @@ func (c *Collector) Name() string { return "procnet" }
 func (c *Collector) Run(ctx context.Context, out chan<- collector.Sample) error {
 	cmd := exec.CommandContext(ctx, "script", "-q", "/dev/null",
 		"nettop", "-P", "-d", "-x",
+		// Only traffic on real network interfaces: without this, local
+		// traffic (e.g. a browser talking to the hub over localhost) would
+		// be blamed for using the internet.
+		"-t", "external",
 		"-L", "0", // keep sampling forever
 		"-s", strconv.Itoa(int(Interval.Seconds())),
 		"-J", "bytes_in,bytes_out")
