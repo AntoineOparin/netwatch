@@ -56,6 +56,19 @@ Use the hub's IP, not `localhost`, unless the agent runs on the hub machine itse
 
 **Work computers:** check before installing anything on an employer's laptop. It's their device and their policy.
 
+## How much disk it uses
+
+Everything lives in one SQLite file (`netwatch.db`), and every kind of data has a ceiling. Once a minute the hub folds raw readings into averages and deletes what has expired:
+
+| What | Kept for |
+|---|---|
+| Raw readings (every ping, every speed sample) | 24 hours |
+| Per-minute averages | 30 days |
+| Per-hour averages, lag incidents and outages | 1 year (`-keep-history`, e.g. `-keep-history 17520h` for 2 years) |
+| Devices not seen on the network | Forgotten after 90 days (`-forget-devices`); a device that comes back starts fresh, without its nickname |
+
+For a typical home (the hub, a couple of computers running the agent, a dozen devices) the file levels off at roughly 100 MB. SQLite reuses the space freed by deletions, so it doesn't keep growing.
+
 ## Start automatically
 
 ### macOS (hub or agent) with launchd

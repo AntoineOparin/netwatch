@@ -128,6 +128,10 @@ func (s *Server) ListAgents(
 	*connect.Request[netwatchv1.ListAgentsRequest],
 ) (*connect.Response[netwatchv1.ListAgentsResponse], error) {
 	window := missedReports * s.cfg.ReportInterval
+	wifiByAgent, err := s.latestWifi()
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	infos := s.cfg.Registry.List()
 	agents := make([]*netwatchv1.Agent, 0, len(infos))
 	for _, info := range infos {
@@ -141,6 +145,7 @@ func (s *Server) ListAgents(
 			RegisteredAt: timestamppb.New(info.RegisteredAt),
 			LastSeen:     timestamppb.New(info.LastSeen),
 			Online:       s.cfg.Registry.Online(info, window),
+			Wifi:         wifiByAgent[info.ID],
 		})
 	}
 	return connect.NewResponse(&netwatchv1.ListAgentsResponse{Agents: agents}), nil

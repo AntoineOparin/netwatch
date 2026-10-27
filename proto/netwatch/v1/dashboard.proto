@@ -23,6 +23,39 @@ service DashboardService {
   rpc SetDeviceNickname(SetDeviceNicknameRequest) returns (SetDeviceNicknameResponse);
   // The busiest apps on each computer over the window (macOS agents only).
   rpc ListTopApps(ListTopAppsRequest) returns (ListTopAppsResponse);
+  // How much of the window the internet was reachable.
+  rpc GetUptime(GetUptimeRequest) returns (GetUptimeResponse);
+  // One device's LAN ping over the window.
+  rpc GetDevicePing(GetDevicePingRequest) returns (GetDevicePingResponse);
+}
+
+message GetUptimeRequest {
+  google.protobuf.Duration window = 1;
+}
+
+message GetUptimeResponse {
+  // Time the hub was actually watching (it can't know about time it was off).
+  google.protobuf.Duration monitored = 1;
+  // Time the internet was unreachable during outages.
+  google.protobuf.Duration downtime = 2;
+  int32 outages = 3;
+  google.protobuf.Duration longest_outage = 4;
+}
+
+message GetDevicePingRequest {
+  string mac = 1;
+  google.protobuf.Duration window = 2;
+}
+
+message GetDevicePingResponse {
+  repeated PingPoint points = 1;
+}
+
+message PingPoint {
+  google.protobuf.Timestamp at = 1;
+  // Unset when the ping was lost.
+  double rtt_ms = 2;
+  bool lost = 3;
 }
 
 message ListTopAppsRequest {
@@ -121,6 +154,9 @@ message Incident {
   int32 pings = 8;
   // Computers that were busy at the same time, busiest uploader first.
   repeated Suspect suspects = 9;
+  // The internet stopped answering entirely (several lost pings in a row),
+  // rather than just being slow.
+  bool outage = 10;
 }
 
 message Suspect {
@@ -201,4 +237,20 @@ message Agent {
   google.protobuf.Timestamp last_seen = 8;
   // True when the last heartbeat arrived within a few heartbeat intervals.
   bool online = 9;
+  // Latest Wi-Fi reading, if the computer is on Wi-Fi and reported one in
+  // the last couple of minutes.
+  WifiStatus wifi = 10;
+}
+
+message WifiStatus {
+  // Signal strength in dBm: around -50 is excellent, -67 good, -75 weak.
+  double signal_dbm = 1;
+  // Background noise in dBm; 0 when the OS doesn't report it.
+  double noise_dbm = 2;
+  // Speed the computer is currently sending at over Wi-Fi.
+  double tx_rate_mbps = 3;
+  // 2.4, 5 or 6; 0 when unknown.
+  double band_ghz = 4;
+  int32 channel = 5;
+  google.protobuf.Timestamp at = 6;
 }

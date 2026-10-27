@@ -42,6 +42,8 @@ interface Aligned {
   missing: number[]; // x positions (seconds) where any series had no value
 }
 
+const GAP_SECONDS = 10;
+
 function align(series: ChartSeries[]): Aligned {
   const seconds = new Set<number>();
   const missing = new Set<number>();
@@ -55,7 +57,15 @@ function align(series: ChartSeries[]): Aligned {
     }
     return values;
   });
-  const xs = [...seconds].sort((a, b) => a - b);
+  // Where data stops for a while (hub restarted, agent asleep), add an
+  // empty slot so the line breaks instead of drawing a straight line
+  // through time nothing was measured.
+  const xs: number[] = [];
+  for (const x of [...seconds].sort((a, b) => a - b)) {
+    const prev = xs.at(-1);
+    if (prev !== undefined && x - prev > GAP_SECONDS) xs.push(prev + 1);
+    xs.push(x);
+  }
   return {
     columns: [xs, ...byKey.map((v) => xs.map((x) => v.get(x) ?? null))],
     missing: [...missing],
@@ -126,7 +136,13 @@ export function TimeSeriesChart({
           width: el.clientWidth,
           height,
           legend: { show: false },
-          cursor: { y: false, points: { size: 8 } },
+          cursor: {
+            y: false,
+            points: { size: 8 },
+            // No drag-to-zoom: the window is fixed by the page's time
+            // picker, and a zoom would fight it. Hovering shows values.
+            drag: { x: false, y: false, setScale: false },
+          },
           scales: {
             x: { time: true, range: (_u, _min, max) => [max - windowSec, max] },
             y: {
@@ -134,7 +150,13 @@ export function TimeSeriesChart({
             },
           },
           axes: [
-            axis,
+            {
+              ...axis,
+              // One line per tick: "6:12 PM" on whole minutes, ":30" in
+              // between. uPlot's default adds the date to the first tick,
+              // which collides with its neighbour.
+              values: (_u, splits) => splits.map(timeTick),
+            },
             {
               ...axis,
               size: 64,
@@ -189,6 +211,13 @@ export function TimeSeriesChart({
   return <div ref={container} className="relative w-full" />;
 }
 
+function timeTick(sec: number) {
+  const d = new Date(sec * 1000);
+  return d.getSeconds() === 0
+    ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    : `:${String(d.getSeconds()).padStart(2, "0")}`;
+}
+
 function drawHighlights(u: uPlot, ranges: Highlight[], color: string) {
   const { ctx } = u;
   const { left, top, width, height } = u.bbox;
@@ -238,7 +267,7 @@ function tooltipPlugin(
       init: (u) => {
         tip = document.createElement("div");
         tip.className =
-          "pointer-events-none absolute z-10 hidden min-w-40 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs shadow-sm dark:border-gray-700 dark:bg-gray-900";
+          "pointer-events-none absolute z-10 hidden min-w-40 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs shadow-lg shadow-zinc-950/10 dark:border-zinc-700 dark:bg-zinc-900";
         u.over.appendChild(tip);
       },
       setCursor: (u) => {
@@ -249,7 +278,7 @@ function tooltipPlugin(
         }
         const { series, formatValue } = current();
         const time = document.createElement("div");
-        time.className = "mb-1 text-gray-500";
+        time.className = "mb-1 text-zinc-500";
         time.textContent = new Date(
           (u.data[0][idx] ?? 0) * 1000,
         ).toLocaleTimeString();
@@ -264,7 +293,7 @@ function tooltipPlugin(
           value.className = "w-20 font-semibold tabular-nums";
           value.textContent = v == null ? "—" : formatValue(v);
           const label = document.createElement("span");
-          label.className = "text-gray-500";
+          label.className = "text-zinc-500";
           label.textContent = s.label;
           row.append(key, value, label);
           return row;

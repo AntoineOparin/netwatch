@@ -108,6 +108,15 @@ func (s *Store) List() ([]Device, error) {
 	return out, rows.Err()
 }
 
+// Prune forgets devices not seen since the cutoff (a friend's phone that
+// visited once). The hub's own machine is always kept.
+func (s *Store) Prune(before time.Time) error {
+	if _, err := s.db.Exec(`DELETE FROM devices WHERE last_seen_ms < ? AND is_self = 0`, before.UnixMilli()); err != nil {
+		return fmt.Errorf("prune devices: %w", err)
+	}
+	return nil
+}
+
 // SetNickname names a device; an empty nickname clears it.
 func (s *Store) SetNickname(mac, nickname string) error {
 	res, err := s.db.Exec(`UPDATE devices SET nickname = ? WHERE mac = ?`, nickname, mac)

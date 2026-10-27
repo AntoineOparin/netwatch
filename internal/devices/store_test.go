@@ -61,3 +61,35 @@ func TestStore(t *testing.T) {
 		t.Errorf("SetNickname on unknown device: err = %v, want ErrNotFound", err)
 	}
 }
+
+func TestPrune(t *testing.T) {
+	db, err := sql.Open("sqlite", filepath.Join(t.TempDir(), "hub.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	s, err := OpenStore(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t0 := time.Date(2026, 10, 27, 21, 0, 0, 0, time.UTC)
+	for _, o := range []discovery.Observation{
+		{MAC: "aa:00:00:00:00:01", IP: "192.168.0.50", Hostname: "friends-phone", At: t0},
+		{MAC: "aa:00:00:00:00:02", IP: "192.168.0.155", Self: true, At: t0},
+		{MAC: "aa:00:00:00:00:03", IP: "192.168.0.177", Hostname: "XBOX", At: t0.Add(100 * 24 * time.Hour)},
+	} {
+		if err := s.Seen(o); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := s.Prune(t0.Add(10 * 24 * time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.List()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 2 || got[0].Hostname != "XBOX" || !got[1].Self {
+		t.Fatalf("kept %+v, want the Xbox and the hub's own machine", got)
+	}
+}

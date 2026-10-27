@@ -53,6 +53,9 @@ type Incident struct {
 	Suspects   []Suspect
 	// Final is set once suspects are settled; the incident won't change again.
 	Final bool
+	// Outage: the internet stopped answering entirely for a while (at least
+	// OutageAfter pings lost in a row), not just slowed down.
+	Outage bool
 }
 
 type Config struct {
@@ -74,6 +77,8 @@ type Config struct {
 	MinUpBps, MinDownBps float64
 	// At most this many suspects per incident.
 	MaxSuspects int
+	// This many internet pings lost in a row make an incident an outage.
+	OutageAfter int
 }
 
 func DefaultConfig() Config {
@@ -89,6 +94,7 @@ func DefaultConfig() Config {
 		MinUpBps:    125_000, // 1 Mbps
 		MinDownBps:  625_000, // 5 Mbps
 		MaxSuspects: 3,
+		OutageAfter: 5,
 	}
 }
 
@@ -110,6 +116,8 @@ type Detector struct {
 	lastBad, lastSlowPing time.Time
 	// Closed, but suspects wait for late agent reports until End+Grace.
 	pending *Incident
+	// Internet pings lost in a row, right now.
+	lostRun int
 }
 
 func NewDetector(cfg Config) *Detector {
@@ -144,6 +152,11 @@ func (d *Detector) Observe(s collector.Sample) []*Incident {
 			d.gateway = d.keep(append(d.gateway, point{s.At, s.Value}), s.At)
 		case probe.TargetInternet:
 			d.internet = d.keep(append(d.internet, point{s.At, s.Value}), s.At)
+			if math.IsNaN(s.Value) {
+				d.lostRun++
+			} else {
+				d.lostRun = 0
+			}
 			return d.evaluate(s.At)
 		}
 	}
@@ -256,6 +269,9 @@ func (d *Detector) baseline(points []point, before time.Time) (float64, bool) {
 // update refreshes everything about an incident that can be computed from
 // the pings between its start and `to`.
 func (d *Detector) update(inc *Incident, to time.Time) {
+	if d.lostRun >= d.cfg.OutageAfter {
+		inc.Outage = true
+	}
 	inc.PeakMS, inc.Lost, inc.Probes = 0, 0, 0
 	for _, p := range between(d.internet, inc.Start, to) {
 		inc.Probes++

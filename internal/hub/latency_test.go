@@ -20,7 +20,9 @@ import (
 	"github.com/AntoineOparin/netwatch/internal/collector"
 	"github.com/AntoineOparin/netwatch/internal/collector/discovery"
 	"github.com/AntoineOparin/netwatch/internal/collector/hostnet"
+	"github.com/AntoineOparin/netwatch/internal/collector/probe"
 	"github.com/AntoineOparin/netwatch/internal/collector/procnet"
+	"github.com/AntoineOparin/netwatch/internal/collector/wifi"
 	"github.com/AntoineOparin/netwatch/internal/devices"
 	"github.com/AntoineOparin/netwatch/internal/incident"
 	"github.com/AntoineOparin/netwatch/internal/series"
@@ -29,6 +31,7 @@ import (
 type testHub struct {
 	store     *series.Store
 	devices   *devices.Store
+	incidents *incident.Store
 	registry  *Registry
 	dashboard netwatchv1connect.DashboardServiceClient
 	agents    netwatchv1connect.AgentServiceClient
@@ -63,6 +66,7 @@ func newTestHub(t *testing.T) *testHub {
 	return &testHub{
 		store:     store,
 		devices:   devs,
+		incidents: incidents,
 		registry:  reg,
 		dashboard: netwatchv1connect.NewDashboardServiceClient(srv.Client(), srv.URL),
 		agents:    netwatchv1connect.NewAgentServiceClient(srv.Client(), srv.URL),
@@ -259,5 +263,62 @@ func TestListTopAppsSkipsChatter(t *testing.T) {
 	}
 	if apps := resp.Msg.GetApps(); len(apps) != 0 {
 		t.Fatalf("apps = %v, want background chatter left out", apps)
+	}
+}
+
+func TestGetUptime(t *testing.T) {
+	h := newTestHub(t)
+	now := time.Now()
+	internet := map[string]string{"target": "internet"}
+	for i := range 120 { // two minutes of watching
+		h.append(t, collector.Sample{Device: "hub", Metric: probe.MetricRTT, Labels: internet, Value: 20, At: now.Add(-time.Duration(120-i) * time.Second)})
+	}
+	if err := h.incidents.Save(&incident.Incident{Start: now.Add(-50 * time.Second), End: now.Add(-38 * time.Second), Outage: true}, now); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.incidents.Save(&incident.Incident{Start: now.Add(-20 * time.Second), End: now.Add(-10 * time.Second)}, now); err != nil { // lag, not an outage
+		t.Fatal(err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	resp, err := h.dashboard.GetUptime(ctx, connect.NewRequest(&netwatchv1.GetUptimeRequest{Window: durationpb.New(time.Hour)}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := resp.Msg
+	if m.GetMonitored().AsDuration() != 2*time.Minute || m.GetOutages() != 1 || m.GetDowntime().AsDuration() != 12*time.Second || m.GetLongestOutage().AsDuration() != 12*time.Second {
+		t.Fatalf("uptime = %v, want 2m watched, one 12 s outage", m)
+	}
+}
+
+func TestGetDevicePingAndWifi(t *testing.T) {
+	h := newTestHub(t)
+	now := time.Now()
+	h.append(t, collector.Sample{Device: "cc:b0:b3:00:00:01", Metric: discovery.MetricLANRTT, Value: 13, At: now.Add(-10 * time.Second)})
+	h.append(t, collector.Sample{Device: "cc:b0:b3:00:00:01", Metric: discovery.MetricLANRTT, Value: math.NaN(), At: now.Add(-5 * time.Second)})
+	h.append(t, collector.Sample{Device: "someone-else", Metric: discovery.MetricLANRTT, Value: 2, At: now.Add(-5 * time.Second)})
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	resp, err := h.dashboard.GetDevicePing(ctx, connect.NewRequest(&netwatchv1.GetDevicePingRequest{Mac: "cc:b0:b3:00:00:01"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if pts := resp.Msg.GetPoints(); len(pts) != 2 || pts[0].GetRttMs() != 13 || !pts[1].GetLost() {
+		t.Fatalf("points = %v, want 13 ms then lost", pts)
+	}
+
+	h.registry.Upsert(AgentInfo{ID: "mac", Hostname: "Mac"})
+	h.append(t, collector.Sample{Device: "mac", Metric: wifi.MetricSignal, Value: -68, At: now})
+	h.append(t, collector.Sample{Device: "mac", Metric: wifi.MetricBand, Value: 5, At: now})
+	h.append(t, collector.Sample{Device: "mac", Metric: wifi.MetricChannel, Value: 153, At: now})
+	agents, err := h.dashboard.ListAgents(ctx, connect.NewRequest(&netwatchv1.ListAgentsRequest{}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := agents.Msg.GetAgents()[0].GetWifi()
+	if w.GetSignalDbm() != -68 || w.GetBandGhz() != 5 || w.GetChannel() != 153 {
+		t.Fatalf("wifi = %v, want -68 dBm on 5 GHz channel 153", w)
 	}
 }

@@ -93,6 +93,24 @@ describe("explain", () => {
   });
 });
 
+test("outages say the internet was unreachable, and where", () => {
+  const upstream = explain(
+    incident({ outage: true, peakMs: 0, lostPings: 12 }),
+    hostnames,
+    30_000,
+  );
+  expect(upstream.headline).toBe(
+    "The internet was unreachable (12 pings lost).",
+  );
+  expect(upstream.cause).toContain("internet provider went down");
+  const local = explain(
+    incident({ outage: true, location: IncidentLocation.LOCAL }),
+    hostnames,
+    30_000,
+  );
+  expect(local.cause).toContain("router stopped answering");
+});
+
 test("formatDuration", () => {
   expect(formatDuration(400)).toBe("1 s");
   expect(formatDuration(120_000)).toBe("2 min");

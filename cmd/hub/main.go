@@ -35,6 +35,8 @@ func main() {
 	probeGateway := flag.String("probe-gateway", "", "router IP to ping (default: detected)")
 	probeISP := flag.String("probe-isp", "", `first ISP hop to ping (default: detected, "off" to skip)`)
 	lagRise := flag.Float64("lag-rise", incident.DefaultConfig().MinRiseMS, "how many ms above normal internet ping counts as lag")
+	keepHistory := flag.Duration("keep-history", series.DefaultHourRetention, "how long to keep hourly averages and lag incidents (8760h = 1 year)")
+	forgetDevices := flag.Duration("forget-devices", 90*24*time.Hour, "forget devices not seen for this long (2160h = 90 days)")
 	sweepEvery := flag.Duration("sweep-every", time.Minute, `how often to look for devices on the LAN ("0" turns discovery off)`)
 	probePrivileged := flag.Bool("probe-privileged", false, "use raw ICMP sockets (needs root/CAP_NET_RAW; for Linux without ping_group_range)")
 	flag.Parse()
@@ -49,6 +51,10 @@ func main() {
 		os.Exit(1)
 	}
 	defer store.Close()
+	if err := store.SetHourRetention(*keepHistory); err != nil {
+		log.Error("invalid -keep-history", "err", err)
+		os.Exit(2)
+	}
 	go store.Maintain(ctx, log)
 
 	incidents, err := incident.OpenStore(store.DB())
@@ -61,6 +67,8 @@ func main() {
 		log.Error("open devices", "err", err)
 		os.Exit(1)
 	}
+
+	go hub.RunRetention(ctx, hub.Retention{Incidents: *keepHistory, ForgetDevices: *forgetDevices}, incidents, devs, log)
 
 	detectorConfig := incident.DefaultConfig()
 	detectorConfig.MinRiseMS = *lagRise
@@ -76,7 +84,7 @@ func main() {
 			Internet:   *probeInternet,
 			Gateway:    *probeGateway,
 			ISP:        *probeISP,
-			Interval:   time.Second,
+			Interval:   probe.Interval,
 			Timeout:    time.Second,
 			Privileged: *probePrivileged,
 			Logger:     log.With("collector", "probe"),

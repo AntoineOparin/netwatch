@@ -1,32 +1,39 @@
-export const WINDOWS = [
+export interface WindowOption {
+  label: string;
+  ms: number;
+}
+
+export const WINDOWS: WindowOption[] = [
   { label: "1 min", ms: 60_000 },
   { label: "5 min", ms: 5 * 60_000 },
   { label: "15 min", ms: 15 * 60_000 },
   { label: "1 hour", ms: 60 * 60_000 },
 ];
 
-// One time-window control for the whole page, so every chart shows the
-// same slice of time.
+// One time-window control per page, so every chart on it shows the same
+// slice of time.
 export function WindowPicker({
   value,
   onChange,
+  options = WINDOWS,
 }: {
   value: number;
   onChange: (ms: number) => void;
+  options?: WindowOption[];
 }) {
   return (
-    <fieldset className="flex w-fit gap-1 rounded-lg bg-gray-200/60 p-0.5 text-xs dark:bg-gray-800">
+    <fieldset className="flex w-fit gap-0.5 rounded-xl bg-zinc-200/70 p-1 text-xs dark:bg-zinc-800/80">
       <legend className="sr-only">Time window</legend>
-      {WINDOWS.map((w) => (
+      {options.map((w) => (
         <button
           key={w.ms}
           type="button"
           aria-pressed={w.ms === value}
           onClick={() => onChange(w.ms)}
-          className={`rounded-md px-2.5 py-1 font-medium ${
+          className={`rounded-lg px-3 py-1.5 font-medium transition-[background-color,color,transform] active:scale-[0.97] ${
             w.ms === value
-              ? "bg-white shadow-sm dark:bg-gray-950"
-              : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-100"
+              ? "bg-white text-zinc-900 shadow-sm shadow-zinc-950/10 dark:bg-zinc-950 dark:text-zinc-50"
+              : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           }`}
         >
           {w.label}

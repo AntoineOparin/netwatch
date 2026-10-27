@@ -34,18 +34,28 @@ export function explain(
   const duration = formatDuration((endMs ?? nowMs) - startMs);
   const lostPct = inc.pings ? Math.round((inc.lostPings / inc.pings) * 100) : 0;
 
-  const parts = [
-    inc.peakMs > 0
-      ? `Internet ping rose to ${Math.round(inc.peakMs)} ms (normally ${Math.round(inc.baselineMs)} ms)`
-      : "Internet pings were being lost",
-  ];
-  if (inc.peakMs > 0 && lostPct > 0) parts.push(`${lostPct}% of pings lost`);
-  const headline = `${parts.join(", ")}.`;
+  let headline: string;
+  if (inc.outage) {
+    headline = `The internet was unreachable (${inc.lostPings} pings lost).`;
+  } else {
+    const parts = [
+      inc.peakMs > 0
+        ? `Internet ping rose to ${Math.round(inc.peakMs)} ms (normally ${Math.round(inc.baselineMs)} ms)`
+        : "Internet pings were being lost",
+    ];
+    if (inc.peakMs > 0 && lostPct > 0) parts.push(`${lostPct}% of pings lost`);
+    headline = `${parts.join(", ")}.`;
+  }
 
   return { startMs, endMs, duration, headline, cause: cause(inc, hostnames) };
 }
 
 function cause(inc: Incident, hostnames: Record<string, string>) {
+  if (inc.outage) {
+    return inc.location === IncidentLocation.LOCAL
+      ? "Your router stopped answering too: the Wi-Fi dropped or the router restarted."
+      : "Your router kept answering, so the connection to your internet provider went down.";
+  }
   if (inc.location === IncidentLocation.LOCAL) {
     return "Your router was slow to answer too, so this was Wi-Fi or the local network, not someone using bandwidth.";
   }

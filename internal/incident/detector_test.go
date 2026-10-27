@@ -132,6 +132,26 @@ func TestPacketLossIsAnIncident(t *testing.T) {
 	}
 }
 
+func TestOutage(t *testing.T) {
+	secs := repeat(90, second{gateway: 4, internet: 20})
+	for i := 60; i < 72; i++ { // 12 s with no internet; the router stays up
+		secs[i].internet = math.NaN()
+	}
+	got := run(NewDetector(DefaultConfig()), secs)
+	if len(got) != 1 || !got[0].Outage || got[0].Location != LocationUpstream || got[0].Lost != 12 {
+		t.Fatalf("got %+v, want one upstream outage with 12 lost pings", got)
+	}
+
+	// Scattered loss is lag, not an outage.
+	lossy := repeat(90, second{gateway: 4, internet: 20})
+	for i := 60; i < 72; i += 2 {
+		lossy[i].internet = math.NaN()
+	}
+	if got := run(NewDetector(DefaultConfig()), lossy); len(got) != 1 || got[0].Outage {
+		t.Fatalf("scattered loss: got %+v, want one incident that isn't an outage", got)
+	}
+}
+
 func TestNoBaselineNoIncident(t *testing.T) {
 	// Lag right after startup: there's nothing normal to compare against yet.
 	if got := run(NewDetector(DefaultConfig()), repeat(10, second{gateway: 4, internet: 300})); len(got) != 0 {

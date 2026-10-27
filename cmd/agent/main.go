@@ -16,6 +16,7 @@ import (
 	"github.com/AntoineOparin/netwatch/internal/collector"
 	"github.com/AntoineOparin/netwatch/internal/collector/hostnet"
 	"github.com/AntoineOparin/netwatch/internal/collector/procnet"
+	"github.com/AntoineOparin/netwatch/internal/collector/wifi"
 )
 
 // Set at build time: go build -ldflags "-X main.version=v0.1.0".
@@ -49,7 +50,10 @@ func main() {
 }
 
 func collectors() []collector.Collector {
-	cs := []collector.Collector{hostnet.New(time.Second)}
+	cs := []collector.Collector{
+		hostnet.New(time.Second),
+		wifi.New(30 * time.Second),
+	}
 	if procnet.Supported() {
 		cs = append(cs, procnet.New())
 	}

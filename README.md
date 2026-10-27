@@ -12,8 +12,9 @@ I built NetWatch to answer one question: *when my Xbox lags, is it the Wi-Fi, th
 
 - **Where lag comes from.** It pings the router, the ISP's first router and the internet once a second. If the router is slow too, it's the Wi-Fi. If only the hops past it are slow, it's the connection.
 - **When it happened, and who was busy.** Lag incidents are detected automatically and explained in a sentence: *"Internet ping rose to 81 ms (normally 19 ms). At the same time, Dads-Laptop was uploading up to 23.5 Mbps (mostly OneDrive)."*
-- **Who's using the internet right now:** per computer, and per app on macOS.
-- **Every device on the network**, the Xbox, phones and TV included: name, maker, and how good its Wi-Fi link is.
+- **Whether it actually dropped.** Outages (the internet stopped answering entirely) are told apart from slowdowns, with uptime over the last day, week or month.
+- **Who's using the internet right now:** per computer, and per app on macOS, plus each computer's Wi-Fi signal strength.
+- **Every device on the network**, the Xbox, phones and TV included: name, maker, and an hour of its ping next to the router's, which shows whether its own Wi-Fi link is the weak spot.
 
 ![Who's using the internet: per-computer download and upload](docs/screenshots/m3-throughput.png)
 
@@ -71,7 +72,7 @@ flowchart LR
 | **Throughput** | Each agent reads its uplink interface's byte counters once a second; the hub corrects for clock differences between computers |
 | **Per-app** (macOS) | `nettop` in delta mode, run under a pseudo-terminal (a pipe made it buffer samples for tens of seconds); processes grouped by their `.app` |
 | **Device discovery** | Pings every address so the OS resolves it with ARP, then reads the ARP table: devices that ignore ping still show up. Maker from the MAC (IEEE OUI), names from the router's DNS |
-| **Storage** | SQLite: raw samples 24 h, per-minute rollups 30 days, per-hour rollups forever |
+| **Storage** | SQLite with hard ceilings: raw samples 24 h, per-minute rollups 30 days, per-hour rollups and incidents 1 year, unseen devices forgotten after 90 days. It levels off around 100 MB. |
 | **Incident detector** | Median baseline, median-of-3 smoothing, hysteresis; Wi-Fi vs upstream from the router's ping; suspects by peak upload/download |
 | **Dashboard** | React Router (SPA mode), uPlot charts, live server-streaming RPCs; built into the hub binary with `go:embed` |
 
@@ -87,6 +88,7 @@ Each milestone has a write-up of the networking and design ideas behind it, with
 4. [Lag explainer](docs/learning/04-lag-explainer.md): baselines, hysteresis, correlation vs causation, and what my modem does under load
 5. [Every device on the LAN](docs/learning/05-lan-devices.md): layer 2 vs layer 3, private MAC addresses, why phones answer slowly
 6. [Which app](docs/learning/06-per-app.md): per-process accounting on each OS, and a buffered-pipe bug
+7. [Wi-Fi, outages, device ping](docs/learning/07-health.md): dBm, telling a drop from a slowdown, measuring uptime honestly
 
 ## What it can't see (yet)
 
@@ -116,6 +118,7 @@ cd web && bun run dev     # dashboard with hot reload on :5173, proxied to :8080
 - [x] **M4 Lag explainer**: incidents, Wi-Fi vs upstream, and who was busy
 - [x] **M5 Every device on the LAN**: discovery, maker, names, LAN ping
 - [x] **M6 Per-app breakdown** (macOS)
+- [x] **Health metrics**: Wi-Fi signal per computer, outages and uptime, per-device ping charts
 - [ ] Per-app on Windows (ETW, needs admin)
 - [ ] **M7 Whole-LAN bytes**: Raspberry Pi as gateway, real traffic for the Xbox, phones and TV
 

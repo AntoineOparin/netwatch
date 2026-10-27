@@ -26,6 +26,10 @@ import (
 const (
 	MetricRTT = "rtt_ms"
 
+	// Interval is how often each target is pinged; uptime is counted in
+	// these steps.
+	Interval = time.Second
+
 	TargetGateway  = "gateway"
 	TargetISP      = "isp"
 	TargetInternet = "internet"

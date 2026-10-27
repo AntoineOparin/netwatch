@@ -121,3 +121,92 @@ func TestStoreSubscribe(t *testing.T) {
 	default:
 	}
 }
+
+func TestCountPoints(t *testing.T) {
+	t0 := time.Date(2026, 10, 27, 21, 0, 0, 0, time.UTC)
+	now := t0.Add(time.Minute)
+	s := openTest(t, &now)
+	internet := map[string]string{"target": "internet"}
+	for i := range 10 {
+		v := 20.0
+		if i%3 == 0 {
+			v = math.NaN() // lost pings still count as "watched"
+		}
+		mustAppend(t, s, collector.Sample{Device: "hub", Metric: "rtt_ms", Labels: internet, Value: v, At: t0.Add(time.Duration(i) * time.Second)})
+		mustAppend(t, s, collector.Sample{Device: "hub", Metric: "rtt_ms", Labels: map[string]string{"target": "gateway"}, Value: 4, At: t0.Add(time.Duration(i) * time.Second)})
+	}
+	n, err := s.CountPoints("rtt_ms", t0.Add(2*time.Second), func(_ string, l map[string]string) bool { return l["target"] == "internet" })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n != 8 {
+		t.Fatalf("got %d, want 8 internet pings from t0+2s", n)
+	}
+}
+
+func TestLast24HoursReadsRawSamples(t *testing.T) {
+	now := time.Date(2026, 10, 27, 21, 0, 30, 0, time.UTC)
+	s := openTest(t, &now)
+	mustAppend(t, s, collector.Sample{Device: "hub", Metric: "m", Value: 1, At: now.Add(-10 * time.Second)})
+
+	// No rollups exist yet; a 24 h window computed a moment ago must still
+	// see the raw sample.
+	since := now.Add(-RawRetention - time.Millisecond)
+	if n, err := s.CountPoints("m", since, func(string, map[string]string) bool { return true }); err != nil || n != 1 {
+		t.Fatalf("CountPoints = %d, %v; want 1", n, err)
+	}
+	if got, err := s.Query("m", since); err != nil || len(got) != 1 {
+		t.Fatalf("Query = %v, %v; want the raw sample", got, err)
+	}
+}
+
+func TestHourRetentionAndSeriesPruning(t *testing.T) {
+	t0 := time.Date(2026, 10, 27, 21, 0, 0, 0, time.UTC)
+	now := t0
+	s := openTest(t, &now)
+	app := map[string]string{"app": "OneDrive"}
+	mustAppend(t, s, collector.Sample{Device: "mac", Metric: "m", Labels: app, Value: 1, At: t0})
+
+	// Roll it up into minutes and hours.
+	now = t0.Add(2 * time.Hour)
+	if err := s.maintain(); err != nil {
+		t.Fatal(err)
+	}
+	var hours int
+	if err := s.db.QueryRow(`SELECT COUNT(*) FROM samples_1h`).Scan(&hours); err != nil || hours != 1 {
+		t.Fatalf("hourly rows = %d, %v; want 1", hours, err)
+	}
+
+	// 400 days later, past the 1-year default, everything about it is gone,
+	// including its row in the series table.
+	now = t0.Add(400 * 24 * time.Hour)
+	if err := s.maintain(); err != nil {
+		t.Fatal(err)
+	}
+	var rows, series int
+	if err := s.db.QueryRow(`SELECT (SELECT COUNT(*) FROM samples_1h), (SELECT COUNT(*) FROM series)`).Scan(&rows, &series); err != nil {
+		t.Fatal(err)
+	}
+	if rows != 0 || series != 0 {
+		t.Fatalf("after a year: %d hourly rows, %d series; want none", rows, series)
+	}
+
+	// The same series can be written again: the ID cache didn't keep the
+	// deleted ID.
+	mustAppend(t, s, collector.Sample{Device: "mac", Metric: "m", Labels: app, Value: 2, At: now})
+	got, err := s.Query("m", now.Add(-time.Minute))
+	if err != nil || len(got) != 1 || got[0].Points[0].Value != 2 {
+		t.Fatalf("Query after pruning = %v, %v; want the new point", got, err)
+	}
+}
+
+func TestSetHourRetentionMustOutliveMinutes(t *testing.T) {
+	now := time.Now()
+	s := openTest(t, &now)
+	if err := s.SetHourRetention(7 * 24 * time.Hour); err == nil {
+		t.Error("a week is shorter than the 30 days of minutes; want an error")
+	}
+	if err := s.SetHourRetention(90 * 24 * time.Hour); err != nil {
+		t.Error(err)
+	}
+}

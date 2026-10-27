@@ -6,7 +6,7 @@
 //	series      one row per (device, metric, labels)
 //	samples     raw points, kept for RawRetention
 //	samples_1m  per-minute rollups, kept for MinuteRetention
-//	samples_1h  per-hour rollups, kept forever
+//	samples_1h  per-hour rollups, kept for HourRetention (1 year by default)
 //
 // NaN values (lost pings) are stored as NULL. SQLite's aggregate functions
 // skip NULLs, so rollups average only real measurements and count the rest
@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+	"strings"
 	"sync"
 	"time"
 
@@ -31,6 +32,10 @@ import (
 const (
 	RawRetention    = 24 * time.Hour
 	MinuteRetention = 30 * 24 * time.Hour
+
+	// DefaultHourRetention is how long per-hour rollups are kept unless
+	// SetHourRetention says otherwise.
+	DefaultHourRetention = 365 * 24 * time.Hour
 
 	// Rollups are recomputed this far back each pass, so samples that arrive
 	// late (an agent catching up after the hub was unreachable) are included.
@@ -84,8 +89,9 @@ type Series struct {
 }
 
 type Store struct {
-	db  *sql.DB
-	now func() time.Time
+	db            *sql.DB
+	now           func() time.Time
+	hourRetention time.Duration
 
 	mu     sync.Mutex
 	ids    map[string]int64 // series key -> series.id
@@ -108,14 +114,26 @@ func Open(path string) (*Store, error) {
 		}
 	}
 	return &Store{
-		db:   db,
-		now:  time.Now,
-		ids:  map[string]int64{},
-		subs: map[int]chan collector.Sample{},
+		db:            db,
+		now:           time.Now,
+		hourRetention: DefaultHourRetention,
+		ids:           map[string]int64{},
+		subs:          map[int]chan collector.Sample{},
 	}, nil
 }
 
 func (s *Store) Close() error { return s.db.Close() }
+
+// SetHourRetention sets how long per-hour rollups are kept. It must be longer
+// than MinuteRetention, or hours would vanish before the minutes they're
+// built from. Call it before Maintain.
+func (s *Store) SetHourRetention(d time.Duration) error {
+	if d <= MinuteRetention {
+		return fmt.Errorf("hourly history must be kept longer than %v", MinuteRetention)
+	}
+	s.hourRetention = d
+	return nil
+}
 
 // DB exposes the database so sibling packages (e.g. incidents) can keep
 // their own tables in the same file.
@@ -194,12 +212,9 @@ func (s *Store) seriesID(smp collector.Sample) (int64, error) {
 // further back since goes, the coarser the data: raw points within
 // RawRetention, then per-minute averages, then per-hour averages.
 func (s *Store) Query(metric string, since time.Time) ([]Series, error) {
-	value, table := "p.value", "samples"
-	switch age := s.now().Sub(since); {
-	case age > MinuteRetention:
-		value, table = rollupAvg, "samples_1h"
-	case age > RawRetention:
-		value, table = rollupAvg, "samples_1m"
+	value, table := "p.value", s.table(since)
+	if table != "samples" {
+		value = rollupAvg
 	}
 	rows, err := s.db.Query(fmt.Sprintf(
 		`SELECT s.device, s.labels, p.ts, %s
@@ -238,6 +253,66 @@ func (s *Store) Query(metric string, since time.Time) ([]Series, error) {
 		cur.Points = append(cur.Points, pt)
 	}
 	return out, rows.Err()
+}
+
+// CountPoints counts the samples (including NaN ones) of every series of
+// metric that match, at or after since. Like Query, it reads raw samples
+// within RawRetention and rollups beyond that.
+func (s *Store) CountPoints(metric string, since time.Time, match func(device string, labels map[string]string) bool) (int64, error) {
+	rows, err := s.db.Query(`SELECT id, device, labels FROM series WHERE metric = ?`, metric)
+	if err != nil {
+		return 0, fmt.Errorf("count %s: %w", metric, err)
+	}
+	var ids []any
+	for rows.Next() {
+		var id int64
+		var device, labelJSON string
+		if err := rows.Scan(&id, &device, &labelJSON); err != nil {
+			rows.Close()
+			return 0, err
+		}
+		var labels map[string]string
+		if err := json.Unmarshal([]byte(labelJSON), &labels); err != nil {
+			rows.Close()
+			return 0, err
+		}
+		if match(device, labels) {
+			ids = append(ids, id)
+		}
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil || len(ids) == 0 {
+		return 0, err
+	}
+
+	count, table := "COUNT(*)", s.table(since)
+	if table != "samples" {
+		count = "COALESCE(SUM(n), 0)"
+	}
+	placeholders := strings.TrimSuffix(strings.Repeat("?,", len(ids)), ",")
+	var n int64
+	err = s.db.QueryRow(
+		fmt.Sprintf(`SELECT %s FROM %s WHERE series_id IN (%s) AND ts >= ?`, count, table, placeholders),
+		append(ids, since.UnixMilli())...,
+	).Scan(&n)
+	if err != nil {
+		return 0, fmt.Errorf("count %s: %w", metric, err)
+	}
+	return n, nil
+}
+
+// table picks the finest table that still covers since. The slack keeps a
+// "last 24 hours" query on raw samples: by the time it runs, since is a hair
+// more than RawRetention ago.
+func (s *Store) table(since time.Time) string {
+	const slack = 5 * time.Minute
+	switch age := s.now().Sub(since); {
+	case age > MinuteRetention+slack:
+		return "samples_1h"
+	case age > RawRetention+slack:
+		return "samples_1m"
+	}
+	return "samples"
 }
 
 // Average of the real measurements in a bucket; NULL if all were missing.
@@ -290,10 +365,34 @@ func (s *Store) maintain() error {
 	if err != nil {
 		return err
 	}
-	for table, keep := range map[string]time.Duration{"samples": RawRetention, "samples_1m": MinuteRetention} {
+	for table, keep := range map[string]time.Duration{
+		"samples":    RawRetention,
+		"samples_1m": MinuteRetention,
+		"samples_1h": s.hourRetention,
+	} {
 		if _, err := s.db.Exec(`DELETE FROM `+table+` WHERE ts < ?`, now.Add(-keep).UnixMilli()); err != nil {
 			return fmt.Errorf("expire %s: %w", table, err)
 		}
+	}
+	return s.pruneSeries()
+}
+
+// pruneSeries deletes series with no data left in any table: an app that
+// was used once, a device that left. Holding s.mu keeps Append from writing
+// to a series while it's being removed, and the ID cache is cleared so no
+// stale ID is reused.
+func (s *Store) pruneSeries() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	res, err := s.db.Exec(`DELETE FROM series WHERE
+		NOT EXISTS (SELECT 1 FROM samples WHERE series_id = series.id) AND
+		NOT EXISTS (SELECT 1 FROM samples_1m WHERE series_id = series.id) AND
+		NOT EXISTS (SELECT 1 FROM samples_1h WHERE series_id = series.id)`)
+	if err != nil {
+		return fmt.Errorf("prune series: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n > 0 {
+		clear(s.ids)
 	}
 	return nil
 }

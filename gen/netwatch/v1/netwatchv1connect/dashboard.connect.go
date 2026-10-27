@@ -54,6 +54,12 @@ const (
 	// DashboardServiceListTopAppsProcedure is the fully-qualified name of the DashboardService's
 	// ListTopApps RPC.
 	DashboardServiceListTopAppsProcedure = "/netwatch.v1.DashboardService/ListTopApps"
+	// DashboardServiceGetUptimeProcedure is the fully-qualified name of the DashboardService's
+	// GetUptime RPC.
+	DashboardServiceGetUptimeProcedure = "/netwatch.v1.DashboardService/GetUptime"
+	// DashboardServiceGetDevicePingProcedure is the fully-qualified name of the DashboardService's
+	// GetDevicePing RPC.
+	DashboardServiceGetDevicePingProcedure = "/netwatch.v1.DashboardService/GetDevicePing"
 )
 
 // DashboardServiceClient is a client for the netwatch.v1.DashboardService service.
@@ -72,6 +78,10 @@ type DashboardServiceClient interface {
 	SetDeviceNickname(context.Context, *connect.Request[v1.SetDeviceNicknameRequest]) (*connect.Response[v1.SetDeviceNicknameResponse], error)
 	// The busiest apps on each computer over the window (macOS agents only).
 	ListTopApps(context.Context, *connect.Request[v1.ListTopAppsRequest]) (*connect.Response[v1.ListTopAppsResponse], error)
+	// How much of the window the internet was reachable.
+	GetUptime(context.Context, *connect.Request[v1.GetUptimeRequest]) (*connect.Response[v1.GetUptimeResponse], error)
+	// One device's LAN ping over the window.
+	GetDevicePing(context.Context, *connect.Request[v1.GetDevicePingRequest]) (*connect.Response[v1.GetDevicePingResponse], error)
 }
 
 // NewDashboardServiceClient constructs a client for the netwatch.v1.DashboardService service. By
@@ -127,6 +137,18 @@ func NewDashboardServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(dashboardServiceMethods.ByName("ListTopApps")),
 			connect.WithClientOptions(opts...),
 		),
+		getUptime: connect.NewClient[v1.GetUptimeRequest, v1.GetUptimeResponse](
+			httpClient,
+			baseURL+DashboardServiceGetUptimeProcedure,
+			connect.WithSchema(dashboardServiceMethods.ByName("GetUptime")),
+			connect.WithClientOptions(opts...),
+		),
+		getDevicePing: connect.NewClient[v1.GetDevicePingRequest, v1.GetDevicePingResponse](
+			httpClient,
+			baseURL+DashboardServiceGetDevicePingProcedure,
+			connect.WithSchema(dashboardServiceMethods.ByName("GetDevicePing")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -139,6 +161,8 @@ type dashboardServiceClient struct {
 	listDevices       *connect.Client[v1.ListDevicesRequest, v1.ListDevicesResponse]
 	setDeviceNickname *connect.Client[v1.SetDeviceNicknameRequest, v1.SetDeviceNicknameResponse]
 	listTopApps       *connect.Client[v1.ListTopAppsRequest, v1.ListTopAppsResponse]
+	getUptime         *connect.Client[v1.GetUptimeRequest, v1.GetUptimeResponse]
+	getDevicePing     *connect.Client[v1.GetDevicePingRequest, v1.GetDevicePingResponse]
 }
 
 // ListAgents calls netwatch.v1.DashboardService.ListAgents.
@@ -176,6 +200,16 @@ func (c *dashboardServiceClient) ListTopApps(ctx context.Context, req *connect.R
 	return c.listTopApps.CallUnary(ctx, req)
 }
 
+// GetUptime calls netwatch.v1.DashboardService.GetUptime.
+func (c *dashboardServiceClient) GetUptime(ctx context.Context, req *connect.Request[v1.GetUptimeRequest]) (*connect.Response[v1.GetUptimeResponse], error) {
+	return c.getUptime.CallUnary(ctx, req)
+}
+
+// GetDevicePing calls netwatch.v1.DashboardService.GetDevicePing.
+func (c *dashboardServiceClient) GetDevicePing(ctx context.Context, req *connect.Request[v1.GetDevicePingRequest]) (*connect.Response[v1.GetDevicePingResponse], error) {
+	return c.getDevicePing.CallUnary(ctx, req)
+}
+
 // DashboardServiceHandler is an implementation of the netwatch.v1.DashboardService service.
 type DashboardServiceHandler interface {
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
@@ -192,6 +226,10 @@ type DashboardServiceHandler interface {
 	SetDeviceNickname(context.Context, *connect.Request[v1.SetDeviceNicknameRequest]) (*connect.Response[v1.SetDeviceNicknameResponse], error)
 	// The busiest apps on each computer over the window (macOS agents only).
 	ListTopApps(context.Context, *connect.Request[v1.ListTopAppsRequest]) (*connect.Response[v1.ListTopAppsResponse], error)
+	// How much of the window the internet was reachable.
+	GetUptime(context.Context, *connect.Request[v1.GetUptimeRequest]) (*connect.Response[v1.GetUptimeResponse], error)
+	// One device's LAN ping over the window.
+	GetDevicePing(context.Context, *connect.Request[v1.GetDevicePingRequest]) (*connect.Response[v1.GetDevicePingResponse], error)
 }
 
 // NewDashboardServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -243,6 +281,18 @@ func NewDashboardServiceHandler(svc DashboardServiceHandler, opts ...connect.Han
 		connect.WithSchema(dashboardServiceMethods.ByName("ListTopApps")),
 		connect.WithHandlerOptions(opts...),
 	)
+	dashboardServiceGetUptimeHandler := connect.NewUnaryHandler(
+		DashboardServiceGetUptimeProcedure,
+		svc.GetUptime,
+		connect.WithSchema(dashboardServiceMethods.ByName("GetUptime")),
+		connect.WithHandlerOptions(opts...),
+	)
+	dashboardServiceGetDevicePingHandler := connect.NewUnaryHandler(
+		DashboardServiceGetDevicePingProcedure,
+		svc.GetDevicePing,
+		connect.WithSchema(dashboardServiceMethods.ByName("GetDevicePing")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/netwatch.v1.DashboardService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DashboardServiceListAgentsProcedure:
@@ -259,6 +309,10 @@ func NewDashboardServiceHandler(svc DashboardServiceHandler, opts ...connect.Han
 			dashboardServiceSetDeviceNicknameHandler.ServeHTTP(w, r)
 		case DashboardServiceListTopAppsProcedure:
 			dashboardServiceListTopAppsHandler.ServeHTTP(w, r)
+		case DashboardServiceGetUptimeProcedure:
+			dashboardServiceGetUptimeHandler.ServeHTTP(w, r)
+		case DashboardServiceGetDevicePingProcedure:
+			dashboardServiceGetDevicePingHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -294,4 +348,12 @@ func (UnimplementedDashboardServiceHandler) SetDeviceNickname(context.Context, *
 
 func (UnimplementedDashboardServiceHandler) ListTopApps(context.Context, *connect.Request[v1.ListTopAppsRequest]) (*connect.Response[v1.ListTopAppsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.ListTopApps is not implemented"))
+}
+
+func (UnimplementedDashboardServiceHandler) GetUptime(context.Context, *connect.Request[v1.GetUptimeRequest]) (*connect.Response[v1.GetUptimeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.GetUptime is not implemented"))
+}
+
+func (UnimplementedDashboardServiceHandler) GetDevicePing(context.Context, *connect.Request[v1.GetDevicePingRequest]) (*connect.Response[v1.GetDevicePingResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.GetDevicePing is not implemented"))
 }

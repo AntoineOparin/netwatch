@@ -66,6 +66,7 @@ func (s *Server) ListIncidents(
 			PeakMs:     inc.PeakMS,
 			LostPings:  int32(inc.Lost),
 			Pings:      int32(inc.Probes),
+			Outage:     inc.Outage,
 		}
 		if !inc.End.IsZero() {
 			pb.End = timestamppb.New(inc.End)

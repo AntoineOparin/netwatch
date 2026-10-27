@@ -37,7 +37,7 @@ M4 lines up "the Xbox lagged at 21:04:07" with "Dad's laptop was uploading at 21
 |---|---|---|
 | `samples` | 1 s (raw) | 24 h |
 | `samples_1m` | 1 minute | 30 days |
-| `samples_1h` | 1 hour | forever |
+| `samples_1h` | 1 hour | 1 year (`-keep-history`) |
 
 - Once a minute, the hub folds finished minutes into `samples_1m` and finished hours into `samples_1h`, then deletes expired rows.
 - Rollups store `n`, `n_missing`, `sum`, `min` and `max`, not just the average. That way hours can be built from minutes exactly, and loss (`n_missing`) survives aggregation.
