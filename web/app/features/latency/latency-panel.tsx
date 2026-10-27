@@ -1,4 +1,7 @@
-import { TimeSeriesChart } from "~/components/time-series-chart";
+import {
+  type Highlight,
+  TimeSeriesChart,
+} from "~/components/time-series-chart";
 import {
   computeStats,
   type Diagnosis,
@@ -13,7 +16,13 @@ import { useLatencyStream } from "./use-latency-stream";
 
 const STATS_WINDOW_MS = 60_000;
 
-export function LatencyPanel({ windowMs }: { windowMs: number }) {
+export function LatencyPanel({
+  windowMs,
+  highlights,
+}: {
+  windowMs: number;
+  highlights: Highlight[];
+}) {
   const { data, connected } = useLatencyStream(windowMs);
 
   const newest = Math.max(
@@ -48,7 +57,8 @@ export function LatencyPanel({ windowMs }: { windowMs: number }) {
         <div className="mb-3">
           <h2 className="text-sm font-medium">Round-trip time</h2>
           <p className="text-xs text-gray-500">
-            One ping per second to each hop. Red ticks are lost pings.
+            One ping per second to each hop. Red ticks are lost pings; shaded
+            stretches are lag incidents.
           </p>
         </div>
         <ul className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
@@ -76,6 +86,7 @@ export function LatencyPanel({ windowMs }: { windowMs: number }) {
           formatValue={(v) => `${Math.round(v)} ms`}
           yFloor={50}
           markMissing
+          highlights={highlights}
         />
       </div>
     </section>

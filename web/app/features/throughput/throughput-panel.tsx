@@ -1,4 +1,7 @@
-import { TimeSeriesChart } from "~/components/time-series-chart";
+import {
+  type Highlight,
+  TimeSeriesChart,
+} from "~/components/time-series-chart";
 import {
   type DeviceTraffic,
   deviceColor,
@@ -14,9 +17,10 @@ const SUMMARY_WINDOW_MS = 60_000;
 interface Props {
   windowMs: number;
   hostnames: Record<string, string>; // agent ID -> hostname
+  highlights: Highlight[];
 }
 
-export function ThroughputPanel({ windowMs, hostnames }: Props) {
+export function ThroughputPanel({ windowMs, hostnames, highlights }: Props) {
   const { data } = useThroughputStream(windowMs);
   const ids = Object.keys(data).sort((a, b) =>
     (hostnames[a] ?? a).localeCompare(hostnames[b] ?? b),
@@ -138,6 +142,7 @@ export function ThroughputPanel({ windowMs, hostnames }: Props) {
                   formatValue={formatMbps}
                   yFloor={1}
                   height={200}
+                  highlights={highlights}
                 />
               </div>
             ))}

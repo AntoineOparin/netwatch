@@ -23,8 +23,17 @@ interface Props {
   yFloor: number;
   // Draw a red tick along the bottom wherever a point has no value.
   markMissing?: boolean;
+  // Time ranges (epoch ms) to shade behind the lines, e.g. lag incidents.
+  highlights?: Highlight[];
   height?: number;
 }
+
+export interface Highlight {
+  from: number;
+  to: number;
+}
+
+const NO_HIGHLIGHTS: Highlight[] = [];
 
 // uPlot wants column arrays sharing one x axis, so points are bucketed to the
 // second they were taken in. Missing values become gaps in the line.
@@ -80,13 +89,14 @@ export function TimeSeriesChart({
   formatValue,
   yFloor,
   markMissing = false,
+  highlights = NO_HIGHLIGHTS,
   height = 240,
 }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const plot = useRef<uPlot | null>(null);
   const aligned = useMemo(() => align(series), [series]);
-  const latest = useRef({ aligned, series, formatValue });
-  latest.current = { aligned, series, formatValue };
+  const latest = useRef({ aligned, series, formatValue, highlights });
+  latest.current = { aligned, series, formatValue, highlights };
   const scheme = useColorScheme();
   // Rebuild the plot when the set of series changes (an agent appears).
   const seriesKey = series.map((s) => `${s.key}:${s.color}`).join(",");
@@ -108,6 +118,7 @@ export function TimeSeriesChart({
         ticks: { show: false },
       };
       const critical = cssVar("var(--status-critical)");
+      const warning = cssVar("var(--status-warning)");
       const windowSec = windowMs / 1000;
 
       plot.current = new UPlot(
@@ -141,6 +152,10 @@ export function TimeSeriesChart({
             })),
           ],
           hooks: {
+            // drawClear runs before the series, so bands sit behind lines.
+            drawClear: [
+              (u) => drawHighlights(u, latest.current.highlights, warning),
+            ],
             draw: markMissing
               ? [
                   (u) =>
@@ -172,6 +187,22 @@ export function TimeSeriesChart({
   }, [aligned]);
 
   return <div ref={container} className="relative w-full" />;
+}
+
+function drawHighlights(u: uPlot, ranges: Highlight[], color: string) {
+  const { ctx } = u;
+  const { left, top, width, height } = u.bbox;
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.18;
+  for (const r of ranges) {
+    const x0 = Math.max(left, u.valToPos(r.from / 1000, "x", true));
+    // At least 2px wide, so a short incident is still visible.
+    const x1 = Math.min(left + width, u.valToPos(r.to / 1000, "x", true));
+    if (x1 < left || x0 > left + width) continue;
+    ctx.fillRect(x0, top, Math.max(x1 - x0, 2 * devicePixelRatio), height);
+  }
+  ctx.restore();
 }
 
 function drawMissing(u: uPlot, missing: number[], color: string) {

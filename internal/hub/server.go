@@ -17,6 +17,7 @@ import (
 	netwatchv1 "github.com/AntoineOparin/netwatch/gen/netwatch/v1"
 	"github.com/AntoineOparin/netwatch/gen/netwatch/v1/netwatchv1connect"
 	"github.com/AntoineOparin/netwatch/internal/collector"
+	"github.com/AntoineOparin/netwatch/internal/incident"
 	"github.com/AntoineOparin/netwatch/internal/series"
 )
 
@@ -33,12 +34,13 @@ const (
 type Server struct {
 	registry       *Registry
 	store          *series.Store
+	incidents      *incident.Store
 	reportInterval time.Duration
 	log            *slog.Logger
 }
 
-func NewServer(registry *Registry, store *series.Store, reportInterval time.Duration, log *slog.Logger) *Server {
-	return &Server{registry: registry, store: store, reportInterval: reportInterval, log: log}
+func NewServer(registry *Registry, store *series.Store, incidents *incident.Store, reportInterval time.Duration, log *slog.Logger) *Server {
+	return &Server{registry: registry, store: store, incidents: incidents, reportInterval: reportInterval, log: log}
 }
 
 // Handler mounts the Connect services and falls back to ui for every other

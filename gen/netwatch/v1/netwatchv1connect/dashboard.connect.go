@@ -42,6 +42,9 @@ const (
 	// DashboardServiceWatchThroughputProcedure is the fully-qualified name of the DashboardService's
 	// WatchThroughput RPC.
 	DashboardServiceWatchThroughputProcedure = "/netwatch.v1.DashboardService/WatchThroughput"
+	// DashboardServiceListIncidentsProcedure is the fully-qualified name of the DashboardService's
+	// ListIncidents RPC.
+	DashboardServiceListIncidentsProcedure = "/netwatch.v1.DashboardService/ListIncidents"
 )
 
 // DashboardServiceClient is a client for the netwatch.v1.DashboardService service.
@@ -52,6 +55,8 @@ type DashboardServiceClient interface {
 	WatchLatency(context.Context, *connect.Request[v1.WatchLatencyRequest]) (*connect.ServerStreamForClient[v1.WatchLatencyResponse], error)
 	// Streams each agent's internet throughput the same way.
 	WatchThroughput(context.Context, *connect.Request[v1.WatchThroughputRequest]) (*connect.ServerStreamForClient[v1.WatchThroughputResponse], error)
+	// Lag incidents still going or that ended within `since`, newest first.
+	ListIncidents(context.Context, *connect.Request[v1.ListIncidentsRequest]) (*connect.Response[v1.ListIncidentsResponse], error)
 }
 
 // NewDashboardServiceClient constructs a client for the netwatch.v1.DashboardService service. By
@@ -83,6 +88,12 @@ func NewDashboardServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(dashboardServiceMethods.ByName("WatchThroughput")),
 			connect.WithClientOptions(opts...),
 		),
+		listIncidents: connect.NewClient[v1.ListIncidentsRequest, v1.ListIncidentsResponse](
+			httpClient,
+			baseURL+DashboardServiceListIncidentsProcedure,
+			connect.WithSchema(dashboardServiceMethods.ByName("ListIncidents")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -91,6 +102,7 @@ type dashboardServiceClient struct {
 	listAgents      *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
 	watchLatency    *connect.Client[v1.WatchLatencyRequest, v1.WatchLatencyResponse]
 	watchThroughput *connect.Client[v1.WatchThroughputRequest, v1.WatchThroughputResponse]
+	listIncidents   *connect.Client[v1.ListIncidentsRequest, v1.ListIncidentsResponse]
 }
 
 // ListAgents calls netwatch.v1.DashboardService.ListAgents.
@@ -108,6 +120,11 @@ func (c *dashboardServiceClient) WatchThroughput(ctx context.Context, req *conne
 	return c.watchThroughput.CallServerStream(ctx, req)
 }
 
+// ListIncidents calls netwatch.v1.DashboardService.ListIncidents.
+func (c *dashboardServiceClient) ListIncidents(ctx context.Context, req *connect.Request[v1.ListIncidentsRequest]) (*connect.Response[v1.ListIncidentsResponse], error) {
+	return c.listIncidents.CallUnary(ctx, req)
+}
+
 // DashboardServiceHandler is an implementation of the netwatch.v1.DashboardService service.
 type DashboardServiceHandler interface {
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
@@ -116,6 +133,8 @@ type DashboardServiceHandler interface {
 	WatchLatency(context.Context, *connect.Request[v1.WatchLatencyRequest], *connect.ServerStream[v1.WatchLatencyResponse]) error
 	// Streams each agent's internet throughput the same way.
 	WatchThroughput(context.Context, *connect.Request[v1.WatchThroughputRequest], *connect.ServerStream[v1.WatchThroughputResponse]) error
+	// Lag incidents still going or that ended within `since`, newest first.
+	ListIncidents(context.Context, *connect.Request[v1.ListIncidentsRequest]) (*connect.Response[v1.ListIncidentsResponse], error)
 }
 
 // NewDashboardServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -143,6 +162,12 @@ func NewDashboardServiceHandler(svc DashboardServiceHandler, opts ...connect.Han
 		connect.WithSchema(dashboardServiceMethods.ByName("WatchThroughput")),
 		connect.WithHandlerOptions(opts...),
 	)
+	dashboardServiceListIncidentsHandler := connect.NewUnaryHandler(
+		DashboardServiceListIncidentsProcedure,
+		svc.ListIncidents,
+		connect.WithSchema(dashboardServiceMethods.ByName("ListIncidents")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/netwatch.v1.DashboardService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DashboardServiceListAgentsProcedure:
@@ -151,6 +176,8 @@ func NewDashboardServiceHandler(svc DashboardServiceHandler, opts ...connect.Han
 			dashboardServiceWatchLatencyHandler.ServeHTTP(w, r)
 		case DashboardServiceWatchThroughputProcedure:
 			dashboardServiceWatchThroughputHandler.ServeHTTP(w, r)
+		case DashboardServiceListIncidentsProcedure:
+			dashboardServiceListIncidentsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -170,4 +197,8 @@ func (UnimplementedDashboardServiceHandler) WatchLatency(context.Context, *conne
 
 func (UnimplementedDashboardServiceHandler) WatchThroughput(context.Context, *connect.Request[v1.WatchThroughputRequest], *connect.ServerStream[v1.WatchThroughputResponse]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.WatchThroughput is not implemented"))
+}
+
+func (UnimplementedDashboardServiceHandler) ListIncidents(context.Context, *connect.Request[v1.ListIncidentsRequest]) (*connect.Response[v1.ListIncidentsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.ListIncidents is not implemented"))
 }

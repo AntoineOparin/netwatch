@@ -117,6 +117,10 @@ func Open(path string) (*Store, error) {
 
 func (s *Store) Close() error { return s.db.Close() }
 
+// DB exposes the database so sibling packages (e.g. incidents) can keep
+// their own tables in the same file.
+func (s *Store) DB() *sql.DB { return s.db }
+
 // Append stores a sample and passes it to subscribers. Writing and
 // publishing under one lock means a subscriber that then queries history
 // sees every sample either in the history or on its channel. A subscriber

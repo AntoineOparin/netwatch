@@ -19,6 +19,7 @@ import (
 	"github.com/AntoineOparin/netwatch/gen/netwatch/v1/netwatchv1connect"
 	"github.com/AntoineOparin/netwatch/internal/collector"
 	"github.com/AntoineOparin/netwatch/internal/collector/hostnet"
+	"github.com/AntoineOparin/netwatch/internal/incident"
 	"github.com/AntoineOparin/netwatch/internal/series"
 )
 
@@ -36,9 +37,13 @@ func newTestHub(t *testing.T) *testHub {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { store.Close() })
+	incidents, err := incident.OpenStore(store.DB())
+	if err != nil {
+		t.Fatal(err)
+	}
 	reg := NewRegistry()
 	quiet := slog.New(slog.NewTextHandler(io.Discard, nil))
-	srv := httptest.NewServer(NewServer(reg, store, time.Second, quiet).Handler(http.NotFoundHandler()))
+	srv := httptest.NewServer(NewServer(reg, store, incidents, time.Second, quiet).Handler(http.NotFoundHandler()))
 	t.Cleanup(srv.Close)
 	return &testHub{
 		store:     store,

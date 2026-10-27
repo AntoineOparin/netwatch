@@ -17,6 +17,7 @@ import (
 	"github.com/AntoineOparin/netwatch/internal/collector"
 	"github.com/AntoineOparin/netwatch/internal/collector/probe"
 	"github.com/AntoineOparin/netwatch/internal/hub"
+	"github.com/AntoineOparin/netwatch/internal/incident"
 	"github.com/AntoineOparin/netwatch/internal/series"
 	"github.com/AntoineOparin/netwatch/internal/webui"
 )
@@ -28,6 +29,7 @@ func main() {
 	probeInternet := flag.String("probe-internet", "1.1.1.1", "internet host to ping")
 	probeGateway := flag.String("probe-gateway", "", "router IP to ping (default: detected)")
 	probeISP := flag.String("probe-isp", "", `first ISP hop to ping (default: detected, "off" to skip)`)
+	lagRise := flag.Float64("lag-rise", incident.DefaultConfig().MinRiseMS, "how many ms above normal internet ping counts as lag")
 	probePrivileged := flag.Bool("probe-privileged", false, "use raw ICMP sockets (needs root/CAP_NET_RAW; for Linux without ping_group_range)")
 	flag.Parse()
 
@@ -42,6 +44,15 @@ func main() {
 	}
 	defer store.Close()
 	go store.Maintain(ctx, log)
+
+	incidents, err := incident.OpenStore(store.DB())
+	if err != nil {
+		log.Error("open incidents", "err", err)
+		os.Exit(1)
+	}
+	detectorConfig := incident.DefaultConfig()
+	detectorConfig.MinRiseMS = *lagRise
+	go hub.RunDetector(ctx, store, incident.NewDetector(detectorConfig), incidents, log)
 
 	sink := func(smp collector.Sample) {
 		if err := store.Append(smp); err != nil {
@@ -60,7 +71,7 @@ func main() {
 		}),
 	)
 
-	server := hub.NewServer(hub.NewRegistry(), store, *reportInterval, log)
+	server := hub.NewServer(hub.NewRegistry(), store, incidents, *reportInterval, log)
 	srv := &http.Server{
 		Addr:              *addr,
 		Handler:           server.Handler(webui.Handler()),

@@ -15,6 +15,49 @@ service DashboardService {
   rpc WatchLatency(WatchLatencyRequest) returns (stream WatchLatencyResponse);
   // Streams each agent's internet throughput the same way.
   rpc WatchThroughput(WatchThroughputRequest) returns (stream WatchThroughputResponse);
+  // Lag incidents still going or that ended within `since`, newest first.
+  rpc ListIncidents(ListIncidentsRequest) returns (ListIncidentsResponse);
+}
+
+message ListIncidentsRequest {
+  google.protobuf.Duration since = 1;
+}
+
+message ListIncidentsResponse {
+  repeated Incident incidents = 1;
+}
+
+// Where a lag incident came from.
+enum IncidentLocation {
+  INCIDENT_LOCATION_UNSPECIFIED = 0;
+  // The router was slow too: Wi-Fi or the local network.
+  INCIDENT_LOCATION_LOCAL = 1;
+  // The router was fine: the connection to the ISP or beyond.
+  INCIDENT_LOCATION_UPSTREAM = 2;
+}
+
+// A stretch of time when internet pings were much slower than usual, or
+// being lost.
+message Incident {
+  int64 id = 1;
+  google.protobuf.Timestamp start = 2;
+  // Unset while the incident is still going.
+  google.protobuf.Timestamp end = 3;
+  IncidentLocation location = 4;
+  // Normal internet round trip before it started.
+  double baseline_ms = 5;
+  double peak_ms = 6;
+  int32 lost_pings = 7;
+  int32 pings = 8;
+  // Computers that were busy at the same time, busiest uploader first.
+  repeated Suspect suspects = 9;
+}
+
+message Suspect {
+  string agent_id = 1;
+  // Highest rates seen during the incident (and just before it).
+  double peak_upload_bytes_per_sec = 2;
+  double peak_download_bytes_per_sec = 3;
 }
 
 message WatchThroughputRequest {
