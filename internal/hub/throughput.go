@@ -22,7 +22,7 @@ func (s *Server) WatchThroughput(
 	req *connect.Request[netwatchv1.WatchThroughputRequest],
 	stream *connect.ServerStream[netwatchv1.WatchThroughputResponse],
 ) error {
-	return watch(ctx, s.store, []string{hostnet.MetricRx, hostnet.MetricTx}, req.Msg.GetHistory().AsDuration(),
+	return watch(ctx, s.cfg.Store, []string{hostnet.MetricRx, hostnet.MetricTx}, req.Msg.GetHistory().AsDuration(),
 		throughputPoint,
 		func(points []*netwatchv1.ThroughputPoint) error {
 			return stream.Send(&netwatchv1.WatchThroughputResponse{Points: points})

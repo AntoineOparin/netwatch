@@ -52,7 +52,7 @@ func (s *Server) ListIncidents(
 	if since <= 0 {
 		since = defaultIncidentHistory
 	}
-	list, err := s.incidents.List(time.Now().Add(-since))
+	list, err := s.cfg.Incidents.List(time.Now().Add(-since))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

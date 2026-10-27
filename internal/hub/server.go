@@ -17,6 +17,7 @@ import (
 	netwatchv1 "github.com/AntoineOparin/netwatch/gen/netwatch/v1"
 	"github.com/AntoineOparin/netwatch/gen/netwatch/v1/netwatchv1connect"
 	"github.com/AntoineOparin/netwatch/internal/collector"
+	"github.com/AntoineOparin/netwatch/internal/devices"
 	"github.com/AntoineOparin/netwatch/internal/incident"
 	"github.com/AntoineOparin/netwatch/internal/series"
 )
@@ -31,16 +32,25 @@ const (
 	skewWarning = 2 * time.Second
 )
 
-type Server struct {
-	registry       *Registry
-	store          *series.Store
-	incidents      *incident.Store
-	reportInterval time.Duration
-	log            *slog.Logger
+// Config is everything the hub's API needs.
+type Config struct {
+	Registry  *Registry
+	Store     *series.Store
+	Incidents *incident.Store
+	Devices   *devices.Store
+	// How often agents report; three missed reports mean offline.
+	ReportInterval time.Duration
+	// A LAN device counts as online if a sweep saw it this recently.
+	DeviceOnlineWindow time.Duration
+	Log                *slog.Logger
 }
 
-func NewServer(registry *Registry, store *series.Store, incidents *incident.Store, reportInterval time.Duration, log *slog.Logger) *Server {
-	return &Server{registry: registry, store: store, incidents: incidents, reportInterval: reportInterval, log: log}
+type Server struct {
+	cfg Config
+}
+
+func NewServer(cfg Config) *Server {
+	return &Server{cfg: cfg}
 }
 
 // Handler mounts the Connect services and falls back to ui for every other
@@ -61,7 +71,7 @@ func (s *Server) Register(
 	if msg.GetAgentId() == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("agent_id is required"))
 	}
-	s.registry.Upsert(AgentInfo{
+	s.cfg.Registry.Upsert(AgentInfo{
 		ID:           msg.GetAgentId(),
 		Hostname:     msg.GetHostname(),
 		OS:           msg.GetOs(),
@@ -70,7 +80,7 @@ func (s *Server) Register(
 		IPs:          msg.GetIps(),
 	})
 	return connect.NewResponse(&netwatchv1.RegisterResponse{
-		ReportInterval: durationpb.New(s.reportInterval),
+		ReportInterval: durationpb.New(s.cfg.ReportInterval),
 	}), nil
 }
 
@@ -80,7 +90,7 @@ func (s *Server) Report(
 ) (*connect.Response[netwatchv1.ReportResponse], error) {
 	msg := req.Msg
 	id := msg.GetAgentId()
-	if !s.registry.Touch(id) {
+	if !s.cfg.Registry.Touch(id) {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("unknown agent, register again"))
 	}
 	if n := len(msg.GetSamples()); n > maxReportSamples {
@@ -94,11 +104,11 @@ func (s *Server) Report(
 	if msg.GetSentAt() != nil {
 		skew = time.Since(msg.GetSentAt().AsTime())
 		if skew > skewWarning || skew < -skewWarning {
-			s.log.Warn("agent clock is off", "agent_id", id, "skew", skew.Round(time.Millisecond))
+			s.cfg.Log.Warn("agent clock is off", "agent_id", id, "skew", skew.Round(time.Millisecond))
 		}
 	}
 	for _, smp := range msg.GetSamples() {
-		err := s.store.Append(collector.Sample{
+		err := s.cfg.Store.Append(collector.Sample{
 			Source: "agent",
 			Device: id,
 			Metric: smp.GetMetric(),
@@ -117,8 +127,8 @@ func (s *Server) ListAgents(
 	context.Context,
 	*connect.Request[netwatchv1.ListAgentsRequest],
 ) (*connect.Response[netwatchv1.ListAgentsResponse], error) {
-	window := missedReports * s.reportInterval
-	infos := s.registry.List()
+	window := missedReports * s.cfg.ReportInterval
+	infos := s.cfg.Registry.List()
 	agents := make([]*netwatchv1.Agent, 0, len(infos))
 	for _, info := range infos {
 		agents = append(agents, &netwatchv1.Agent{
@@ -130,7 +140,7 @@ func (s *Server) ListAgents(
 			Ips:          info.IPs,
 			RegisteredAt: timestamppb.New(info.RegisteredAt),
 			LastSeen:     timestamppb.New(info.LastSeen),
-			Online:       s.registry.Online(info, window),
+			Online:       s.cfg.Registry.Online(info, window),
 		})
 	}
 	return connect.NewResponse(&netwatchv1.ListAgentsResponse{Agents: agents}), nil

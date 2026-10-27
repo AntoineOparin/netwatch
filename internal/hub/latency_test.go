@@ -18,13 +18,16 @@ import (
 	netwatchv1 "github.com/AntoineOparin/netwatch/gen/netwatch/v1"
 	"github.com/AntoineOparin/netwatch/gen/netwatch/v1/netwatchv1connect"
 	"github.com/AntoineOparin/netwatch/internal/collector"
+	"github.com/AntoineOparin/netwatch/internal/collector/discovery"
 	"github.com/AntoineOparin/netwatch/internal/collector/hostnet"
+	"github.com/AntoineOparin/netwatch/internal/devices"
 	"github.com/AntoineOparin/netwatch/internal/incident"
 	"github.com/AntoineOparin/netwatch/internal/series"
 )
 
 type testHub struct {
 	store     *series.Store
+	devices   *devices.Store
 	registry  *Registry
 	dashboard netwatchv1connect.DashboardServiceClient
 	agents    netwatchv1connect.AgentServiceClient
@@ -41,12 +44,24 @@ func newTestHub(t *testing.T) *testHub {
 	if err != nil {
 		t.Fatal(err)
 	}
+	devs, err := devices.OpenStore(store.DB())
+	if err != nil {
+		t.Fatal(err)
+	}
 	reg := NewRegistry()
-	quiet := slog.New(slog.NewTextHandler(io.Discard, nil))
-	srv := httptest.NewServer(NewServer(reg, store, incidents, time.Second, quiet).Handler(http.NotFoundHandler()))
+	srv := httptest.NewServer(NewServer(Config{
+		Registry:           reg,
+		Store:              store,
+		Incidents:          incidents,
+		Devices:            devs,
+		ReportInterval:     time.Second,
+		DeviceOnlineWindow: 3 * time.Minute,
+		Log:                slog.New(slog.NewTextHandler(io.Discard, nil)),
+	}).Handler(http.NotFoundHandler()))
 	t.Cleanup(srv.Close)
 	return &testHub{
 		store:     store,
+		devices:   devs,
 		registry:  reg,
 		dashboard: netwatchv1connect.NewDashboardServiceClient(srv.Client(), srv.URL),
 		agents:    netwatchv1connect.NewAgentServiceClient(srv.Client(), srv.URL),
@@ -152,5 +167,52 @@ func TestReportCorrectsClockSkew(t *testing.T) {
 	}
 	if age := time.Since(p.GetAt().AsTime()); age < 0 || age > 5*time.Second {
 		t.Errorf("sample is %v old, want about 1s", age)
+	}
+}
+
+func TestListDevices(t *testing.T) {
+	h := newTestHub(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	now := time.Now()
+
+	h.registry.Upsert(AgentInfo{ID: "dads-laptop", Hostname: "Dads-Laptop", IPs: []string{"192.168.0.20"}})
+	for _, o := range []discovery.Observation{
+		{MAC: "aa:00:00:00:00:10", IP: "192.168.0.10", Hostname: "old-tv", At: now.Add(-time.Hour)},
+		{MAC: "7c:ed:8d:00:00:02", IP: "192.168.0.9", Vendor: "Microsoft", Replied: true, At: now},
+		{MAC: "06:00:00:00:00:20", IP: "192.168.0.20", Private: true, Hostname: "Dads-Laptop", At: now},
+	} {
+		if err := h.devices.Seen(o); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for i, v := range []float64{4, 8, math.NaN(), 4} {
+		h.append(t, collector.Sample{Device: "7c:ed:8d:00:00:02", Metric: discovery.MetricLANRTT, Value: v, At: now.Add(time.Duration(i-4) * 5 * time.Second)})
+	}
+
+	if _, err := h.dashboard.SetDeviceNickname(ctx, connect.NewRequest(&netwatchv1.SetDeviceNicknameRequest{Mac: "7c:ed:8d:00:00:02", Nickname: "  Xbox "})); err != nil {
+		t.Fatal(err)
+	}
+	resp, err := h.dashboard.ListDevices(ctx, connect.NewRequest(&netwatchv1.ListDevicesRequest{}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := resp.Msg.GetDevices()
+	if len(got) != 3 {
+		t.Fatalf("got %d devices, want 3", len(got))
+	}
+	// Online first, sorted numerically (.9 before .20), then the offline TV.
+	if got[0].GetIp() != "192.168.0.9" || got[1].GetIp() != "192.168.0.20" || got[2].GetOnline() {
+		t.Fatalf("order = %s, %s, %s (online %v)", got[0].GetIp(), got[1].GetIp(), got[2].GetIp(), got[2].GetOnline())
+	}
+	xbox := got[0]
+	if xbox.GetNickname() != "Xbox" || !xbox.GetAnswersPing() || xbox.GetPings() != 4 {
+		t.Errorf("xbox = %v", xbox)
+	}
+	if xbox.GetPingAvgMs() != 16.0/3 || xbox.GetPingJitterMs() != 4 || xbox.GetPingLoss() != 0.25 {
+		t.Errorf("ping stats avg %v jitter %v loss %v, want 5.33, 4, 0.25", xbox.GetPingAvgMs(), xbox.GetPingJitterMs(), xbox.GetPingLoss())
+	}
+	if got[1].GetAgentId() != "dads-laptop" {
+		t.Errorf("device at the agent's IP should link to it, got %q", got[1].GetAgentId())
 	}
 }

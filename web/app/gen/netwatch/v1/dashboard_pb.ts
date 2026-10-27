@@ -12,7 +12,191 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file netwatch/v1/dashboard.proto.
  */
 export const file_netwatch_v1_dashboard: GenFile = /*@__PURE__*/
-  fileDesc("ChtuZXR3YXRjaC92MS9kYXNoYm9hcmQucHJvdG8SC25ldHdhdGNoLnYxIkAKFExpc3RJbmNpZGVudHNSZXF1ZXN0EigKBXNpbmNlGAEgASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uIkEKFUxpc3RJbmNpZGVudHNSZXNwb25zZRIoCglpbmNpZGVudHMYASADKAsyFS5uZXR3YXRjaC52MS5JbmNpZGVudCKMAgoISW5jaWRlbnQSCgoCaWQYASABKAMSKQoFc3RhcnQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEicKA2VuZBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLwoIbG9jYXRpb24YBCABKA4yHS5uZXR3YXRjaC52MS5JbmNpZGVudExvY2F0aW9uEhMKC2Jhc2VsaW5lX21zGAUgASgBEg8KB3BlYWtfbXMYBiABKAESEgoKbG9zdF9waW5ncxgHIAEoBRINCgVwaW5ncxgIIAEoBRImCghzdXNwZWN0cxgJIAMoCzIULm5ldHdhdGNoLnYxLlN1c3BlY3QiYwoHU3VzcGVjdBIQCghhZ2VudF9pZBgBIAEoCRIhChlwZWFrX3VwbG9hZF9ieXRlc19wZXJfc2VjGAIgASgBEiMKG3BlYWtfZG93bmxvYWRfYnl0ZXNfcGVyX3NlYxgDIAEoASJEChZXYXRjaFRocm91Z2hwdXRSZXF1ZXN0EioKB2hpc3RvcnkYASABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24iRwoXV2F0Y2hUaHJvdWdocHV0UmVzcG9uc2USLAoGcG9pbnRzGAEgAygLMhwubmV0d2F0Y2gudjEuVGhyb3VnaHB1dFBvaW50IqABCg9UaHJvdWdocHV0UG9pbnQSEAoIYWdlbnRfaWQYASABKAkSKQoJZGlyZWN0aW9uGAIgASgOMhYubmV0d2F0Y2gudjEuRGlyZWN0aW9uEiYKAmF0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIVCg1ieXRlc19wZXJfc2VjGAQgASgBEhEKCWludGVyZmFjZRgFIAEoCSJBChNXYXRjaExhdGVuY3lSZXF1ZXN0EioKB2hpc3RvcnkYASABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24iQQoUV2F0Y2hMYXRlbmN5UmVzcG9uc2USKQoGcG9pbnRzGAEgAygLMhkubmV0d2F0Y2gudjEuTGF0ZW5jeVBvaW50Io4BCgxMYXRlbmN5UG9pbnQSKgoGdGFyZ2V0GAEgASgOMhoubmV0d2F0Y2gudjEuTGF0ZW5jeVRhcmdldBIMCgRhZGRyGAIgASgJEiYKAmF0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZydHRfbXMYBCABKAESDAoEbG9zdBgFIAEoCCITChFMaXN0QWdlbnRzUmVxdWVzdCI4ChJMaXN0QWdlbnRzUmVzcG9uc2USIgoGYWdlbnRzGAEgAygLMhIubmV0d2F0Y2gudjEuQWdlbnQi1QEKBUFnZW50EgoKAmlkGAEgASgJEhAKCGhvc3RuYW1lGAIgASgJEgoKAm9zGAMgASgJEgwKBGFyY2gYBCABKAkSFQoNYWdlbnRfdmVyc2lvbhgFIAEoCRILCgNpcHMYBiADKAkSMQoNcmVnaXN0ZXJlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoJbGFzdF9zZWVuGAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZvbmxpbmUYCSABKAgqcgoQSW5jaWRlbnRMb2NhdGlvbhIhCh1JTkNJREVOVF9MT0NBVElPTl9VTlNQRUNJRklFRBAAEhsKF0lOQ0lERU5UX0xPQ0FUSU9OX0xPQ0FMEAESHgoaSU5DSURFTlRfTE9DQVRJT05fVVBTVFJFQU0QAipUCglEaXJlY3Rpb24SGQoVRElSRUNUSU9OX1VOU1BFQ0lGSUVEEAASFgoSRElSRUNUSU9OX0RPV05MT0FEEAESFAoQRElSRUNUSU9OX1VQTE9BRBACKoABCg1MYXRlbmN5VGFyZ2V0Eh4KGkxBVEVOQ1lfVEFSR0VUX1VOU1BFQ0lGSUVEEAASGgoWTEFURU5DWV9UQVJHRVRfR0FURVdBWRABEhYKEkxBVEVOQ1lfVEFSR0VUX0lTUBACEhsKF0xBVEVOQ1lfVEFSR0VUX0lOVEVSTkVUEAMy8AIKEERhc2hib2FyZFNlcnZpY2USTQoKTGlzdEFnZW50cxIeLm5ldHdhdGNoLnYxLkxpc3RBZ2VudHNSZXF1ZXN0Gh8ubmV0d2F0Y2gudjEuTGlzdEFnZW50c1Jlc3BvbnNlElUKDFdhdGNoTGF0ZW5jeRIgLm5ldHdhdGNoLnYxLldhdGNoTGF0ZW5jeVJlcXVlc3QaIS5uZXR3YXRjaC52MS5XYXRjaExhdGVuY3lSZXNwb25zZTABEl4KD1dhdGNoVGhyb3VnaHB1dBIjLm5ldHdhdGNoLnYxLldhdGNoVGhyb3VnaHB1dFJlcXVlc3QaJC5uZXR3YXRjaC52MS5XYXRjaFRocm91Z2hwdXRSZXNwb25zZTABElYKDUxpc3RJbmNpZGVudHMSIS5uZXR3YXRjaC52MS5MaXN0SW5jaWRlbnRzUmVxdWVzdBoiLm5ldHdhdGNoLnYxLkxpc3RJbmNpZGVudHNSZXNwb25zZUI+WjxnaXRodWIuY29tL0FudG9pbmVPcGFyaW4vbmV0d2F0Y2gvZ2VuL25ldHdhdGNoL3YxO25ldHdhdGNodjFiBnByb3RvMw", [file_google_protobuf_duration, file_google_protobuf_timestamp]);
+  fileDesc("ChtuZXR3YXRjaC92MS9kYXNoYm9hcmQucHJvdG8SC25ldHdhdGNoLnYxIhQKEkxpc3REZXZpY2VzUmVxdWVzdCI+ChNMaXN0RGV2aWNlc1Jlc3BvbnNlEicKB2RldmljZXMYASADKAsyFi5uZXR3YXRjaC52MS5MYW5EZXZpY2Ui9gIKCUxhbkRldmljZRILCgNtYWMYASABKAkSCgoCaXAYAiABKAkSDgoGdmVuZG9yGAMgASgJEhMKC3ByaXZhdGVfbWFjGAQgASgIEhAKCGhvc3RuYW1lGAUgASgJEhAKCG5pY2tuYW1lGAYgASgJEi4KCmZpcnN0X3NlZW4YByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi0KCWxhc3Rfc2VlbhgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDgoGb25saW5lGAkgASgIEhQKDGFuc3dlcnNfcGluZxgKIAEoCBITCgtwaW5nX2F2Z19tcxgLIAEoARIWCg5waW5nX2ppdHRlcl9tcxgMIAEoARIRCglwaW5nX2xvc3MYDSABKAESDQoFcGluZ3MYDiABKAUSEAoIYWdlbnRfaWQYDyABKAkSDgoGaXNfaHViGBAgASgIEhEKCWlzX3JvdXRlchgRIAEoCCI5ChhTZXREZXZpY2VOaWNrbmFtZVJlcXVlc3QSCwoDbWFjGAEgASgJEhAKCG5pY2tuYW1lGAIgASgJIhsKGVNldERldmljZU5pY2tuYW1lUmVzcG9uc2UiQAoUTGlzdEluY2lkZW50c1JlcXVlc3QSKAoFc2luY2UYASABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24iQQoVTGlzdEluY2lkZW50c1Jlc3BvbnNlEigKCWluY2lkZW50cxgBIAMoCzIVLm5ldHdhdGNoLnYxLkluY2lkZW50IowCCghJbmNpZGVudBIKCgJpZBgBIAEoAxIpCgVzdGFydBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASJwoDZW5kGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIvCghsb2NhdGlvbhgEIAEoDjIdLm5ldHdhdGNoLnYxLkluY2lkZW50TG9jYXRpb24SEwoLYmFzZWxpbmVfbXMYBSABKAESDwoHcGVha19tcxgGIAEoARISCgpsb3N0X3BpbmdzGAcgASgFEg0KBXBpbmdzGAggASgFEiYKCHN1c3BlY3RzGAkgAygLMhQubmV0d2F0Y2gudjEuU3VzcGVjdCJjCgdTdXNwZWN0EhAKCGFnZW50X2lkGAEgASgJEiEKGXBlYWtfdXBsb2FkX2J5dGVzX3Blcl9zZWMYAiABKAESIwobcGVha19kb3dubG9hZF9ieXRlc19wZXJfc2VjGAMgASgBIkQKFldhdGNoVGhyb3VnaHB1dFJlcXVlc3QSKgoHaGlzdG9yeRgBIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbiJHChdXYXRjaFRocm91Z2hwdXRSZXNwb25zZRIsCgZwb2ludHMYASADKAsyHC5uZXR3YXRjaC52MS5UaHJvdWdocHV0UG9pbnQioAEKD1Rocm91Z2hwdXRQb2ludBIQCghhZ2VudF9pZBgBIAEoCRIpCglkaXJlY3Rpb24YAiABKA4yFi5uZXR3YXRjaC52MS5EaXJlY3Rpb24SJgoCYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhUKDWJ5dGVzX3Blcl9zZWMYBCABKAESEQoJaW50ZXJmYWNlGAUgASgJIkEKE1dhdGNoTGF0ZW5jeVJlcXVlc3QSKgoHaGlzdG9yeRgBIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbiJBChRXYXRjaExhdGVuY3lSZXNwb25zZRIpCgZwb2ludHMYASADKAsyGS5uZXR3YXRjaC52MS5MYXRlbmN5UG9pbnQijgEKDExhdGVuY3lQb2ludBIqCgZ0YXJnZXQYASABKA4yGi5uZXR3YXRjaC52MS5MYXRlbmN5VGFyZ2V0EgwKBGFkZHIYAiABKAkSJgoCYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBnJ0dF9tcxgEIAEoARIMCgRsb3N0GAUgASgIIhMKEUxpc3RBZ2VudHNSZXF1ZXN0IjgKEkxpc3RBZ2VudHNSZXNwb25zZRIiCgZhZ2VudHMYASADKAsyEi5uZXR3YXRjaC52MS5BZ2VudCLVAQoFQWdlbnQSCgoCaWQYASABKAkSEAoIaG9zdG5hbWUYAiABKAkSCgoCb3MYAyABKAkSDAoEYXJjaBgEIAEoCRIVCg1hZ2VudF92ZXJzaW9uGAUgASgJEgsKA2lwcxgGIAMoCRIxCg1yZWdpc3RlcmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBItCglsYXN0X3NlZW4YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBm9ubGluZRgJIAEoCCpyChBJbmNpZGVudExvY2F0aW9uEiEKHUlOQ0lERU5UX0xPQ0FUSU9OX1VOU1BFQ0lGSUVEEAASGwoXSU5DSURFTlRfTE9DQVRJT05fTE9DQUwQARIeChpJTkNJREVOVF9MT0NBVElPTl9VUFNUUkVBTRACKlQKCURpcmVjdGlvbhIZChVESVJFQ1RJT05fVU5TUEVDSUZJRUQQABIWChJESVJFQ1RJT05fRE9XTkxPQUQQARIUChBESVJFQ1RJT05fVVBMT0FEEAIqgAEKDUxhdGVuY3lUYXJnZXQSHgoaTEFURU5DWV9UQVJHRVRfVU5TUEVDSUZJRUQQABIaChZMQVRFTkNZX1RBUkdFVF9HQVRFV0FZEAESFgoSTEFURU5DWV9UQVJHRVRfSVNQEAISGwoXTEFURU5DWV9UQVJHRVRfSU5URVJORVQQAzKmBAoQRGFzaGJvYXJkU2VydmljZRJNCgpMaXN0QWdlbnRzEh4ubmV0d2F0Y2gudjEuTGlzdEFnZW50c1JlcXVlc3QaHy5uZXR3YXRjaC52MS5MaXN0QWdlbnRzUmVzcG9uc2USVQoMV2F0Y2hMYXRlbmN5EiAubmV0d2F0Y2gudjEuV2F0Y2hMYXRlbmN5UmVxdWVzdBohLm5ldHdhdGNoLnYxLldhdGNoTGF0ZW5jeVJlc3BvbnNlMAESXgoPV2F0Y2hUaHJvdWdocHV0EiMubmV0d2F0Y2gudjEuV2F0Y2hUaHJvdWdocHV0UmVxdWVzdBokLm5ldHdhdGNoLnYxLldhdGNoVGhyb3VnaHB1dFJlc3BvbnNlMAESVgoNTGlzdEluY2lkZW50cxIhLm5ldHdhdGNoLnYxLkxpc3RJbmNpZGVudHNSZXF1ZXN0GiIubmV0d2F0Y2gudjEuTGlzdEluY2lkZW50c1Jlc3BvbnNlElAKC0xpc3REZXZpY2VzEh8ubmV0d2F0Y2gudjEuTGlzdERldmljZXNSZXF1ZXN0GiAubmV0d2F0Y2gudjEuTGlzdERldmljZXNSZXNwb25zZRJiChFTZXREZXZpY2VOaWNrbmFtZRIlLm5ldHdhdGNoLnYxLlNldERldmljZU5pY2tuYW1lUmVxdWVzdBomLm5ldHdhdGNoLnYxLlNldERldmljZU5pY2tuYW1lUmVzcG9uc2VCPlo8Z2l0aHViLmNvbS9BbnRvaW5lT3BhcmluL25ldHdhdGNoL2dlbi9uZXR3YXRjaC92MTtuZXR3YXRjaHYxYgZwcm90bzM", [file_google_protobuf_duration, file_google_protobuf_timestamp]);
+
+/**
+ * @generated from message netwatch.v1.ListDevicesRequest
+ */
+export type ListDevicesRequest = Message<"netwatch.v1.ListDevicesRequest"> & {
+};
+
+/**
+ * Describes the message netwatch.v1.ListDevicesRequest.
+ * Use `create(ListDevicesRequestSchema)` to create a new message.
+ */
+export const ListDevicesRequestSchema: GenMessage<ListDevicesRequest> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 0);
+
+/**
+ * @generated from message netwatch.v1.ListDevicesResponse
+ */
+export type ListDevicesResponse = Message<"netwatch.v1.ListDevicesResponse"> & {
+  /**
+   * @generated from field: repeated netwatch.v1.LanDevice devices = 1;
+   */
+  devices: LanDevice[];
+};
+
+/**
+ * Describes the message netwatch.v1.ListDevicesResponse.
+ * Use `create(ListDevicesResponseSchema)` to create a new message.
+ */
+export const ListDevicesResponseSchema: GenMessage<ListDevicesResponse> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 1);
+
+/**
+ * @generated from message netwatch.v1.LanDevice
+ */
+export type LanDevice = Message<"netwatch.v1.LanDevice"> & {
+  /**
+   * @generated from field: string mac = 1;
+   */
+  mac: string;
+
+  /**
+   * @generated from field: string ip = 2;
+   */
+  ip: string;
+
+  /**
+   * Maker looked up from the MAC. Empty when unknown or the MAC is private.
+   *
+   * @generated from field: string vendor = 3;
+   */
+  vendor: string;
+
+  /**
+   * The device made up its MAC for privacy (phones, tablets, laptops), so
+   * its maker can't be known.
+   *
+   * @generated from field: bool private_mac = 4;
+   */
+  privateMac: boolean;
+
+  /**
+   * Name the router knows it by (from DHCP).
+   *
+   * @generated from field: string hostname = 5;
+   */
+  hostname: string;
+
+  /**
+   * @generated from field: string nickname = 6;
+   */
+  nickname: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp first_seen = 7;
+   */
+  firstSeen?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp last_seen = 8;
+   */
+  lastSeen?: Timestamp | undefined;
+
+  /**
+   * Seen in the last sweep or two.
+   *
+   * @generated from field: bool online = 9;
+   */
+  online: boolean;
+
+  /**
+   * Has ever answered a ping. Many phones and consoles don't.
+   *
+   * @generated from field: bool answers_ping = 10;
+   */
+  answersPing: boolean;
+
+  /**
+   * LAN round trip over the last 10 minutes, if it answers pings: a fast,
+   * steady number means good Wi-Fi (or a cable).
+   *
+   * @generated from field: double ping_avg_ms = 11;
+   */
+  pingAvgMs: number;
+
+  /**
+   * @generated from field: double ping_jitter_ms = 12;
+   */
+  pingJitterMs: number;
+
+  /**
+   * 0..1
+   *
+   * @generated from field: double ping_loss = 13;
+   */
+  pingLoss: number;
+
+  /**
+   * @generated from field: int32 pings = 14;
+   */
+  pings: number;
+
+  /**
+   * Set when this device runs the agent.
+   *
+   * @generated from field: string agent_id = 15;
+   */
+  agentId: string;
+
+  /**
+   * The machine running the hub.
+   *
+   * @generated from field: bool is_hub = 16;
+   */
+  isHub: boolean;
+
+  /**
+   * The default gateway: your router.
+   *
+   * @generated from field: bool is_router = 17;
+   */
+  isRouter: boolean;
+};
+
+/**
+ * Describes the message netwatch.v1.LanDevice.
+ * Use `create(LanDeviceSchema)` to create a new message.
+ */
+export const LanDeviceSchema: GenMessage<LanDevice> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 2);
+
+/**
+ * @generated from message netwatch.v1.SetDeviceNicknameRequest
+ */
+export type SetDeviceNicknameRequest = Message<"netwatch.v1.SetDeviceNicknameRequest"> & {
+  /**
+   * @generated from field: string mac = 1;
+   */
+  mac: string;
+
+  /**
+   * @generated from field: string nickname = 2;
+   */
+  nickname: string;
+};
+
+/**
+ * Describes the message netwatch.v1.SetDeviceNicknameRequest.
+ * Use `create(SetDeviceNicknameRequestSchema)` to create a new message.
+ */
+export const SetDeviceNicknameRequestSchema: GenMessage<SetDeviceNicknameRequest> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 3);
+
+/**
+ * @generated from message netwatch.v1.SetDeviceNicknameResponse
+ */
+export type SetDeviceNicknameResponse = Message<"netwatch.v1.SetDeviceNicknameResponse"> & {
+};
+
+/**
+ * Describes the message netwatch.v1.SetDeviceNicknameResponse.
+ * Use `create(SetDeviceNicknameResponseSchema)` to create a new message.
+ */
+export const SetDeviceNicknameResponseSchema: GenMessage<SetDeviceNicknameResponse> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 4);
 
 /**
  * @generated from message netwatch.v1.ListIncidentsRequest
@@ -29,7 +213,7 @@ export type ListIncidentsRequest = Message<"netwatch.v1.ListIncidentsRequest"> &
  * Use `create(ListIncidentsRequestSchema)` to create a new message.
  */
 export const ListIncidentsRequestSchema: GenMessage<ListIncidentsRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 0);
+  messageDesc(file_netwatch_v1_dashboard, 5);
 
 /**
  * @generated from message netwatch.v1.ListIncidentsResponse
@@ -46,7 +230,7 @@ export type ListIncidentsResponse = Message<"netwatch.v1.ListIncidentsResponse">
  * Use `create(ListIncidentsResponseSchema)` to create a new message.
  */
 export const ListIncidentsResponseSchema: GenMessage<ListIncidentsResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 1);
+  messageDesc(file_netwatch_v1_dashboard, 6);
 
 /**
  * A stretch of time when internet pings were much slower than usual, or
@@ -112,7 +296,7 @@ export type Incident = Message<"netwatch.v1.Incident"> & {
  * Use `create(IncidentSchema)` to create a new message.
  */
 export const IncidentSchema: GenMessage<Incident> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 2);
+  messageDesc(file_netwatch_v1_dashboard, 7);
 
 /**
  * @generated from message netwatch.v1.Suspect
@@ -141,7 +325,7 @@ export type Suspect = Message<"netwatch.v1.Suspect"> & {
  * Use `create(SuspectSchema)` to create a new message.
  */
 export const SuspectSchema: GenMessage<Suspect> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 3);
+  messageDesc(file_netwatch_v1_dashboard, 8);
 
 /**
  * @generated from message netwatch.v1.WatchThroughputRequest
@@ -158,7 +342,7 @@ export type WatchThroughputRequest = Message<"netwatch.v1.WatchThroughputRequest
  * Use `create(WatchThroughputRequestSchema)` to create a new message.
  */
 export const WatchThroughputRequestSchema: GenMessage<WatchThroughputRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 4);
+  messageDesc(file_netwatch_v1_dashboard, 9);
 
 /**
  * @generated from message netwatch.v1.WatchThroughputResponse
@@ -175,7 +359,7 @@ export type WatchThroughputResponse = Message<"netwatch.v1.WatchThroughputRespon
  * Use `create(WatchThroughputResponseSchema)` to create a new message.
  */
 export const WatchThroughputResponseSchema: GenMessage<WatchThroughputResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 5);
+  messageDesc(file_netwatch_v1_dashboard, 10);
 
 /**
  * @generated from message netwatch.v1.ThroughputPoint
@@ -214,7 +398,7 @@ export type ThroughputPoint = Message<"netwatch.v1.ThroughputPoint"> & {
  * Use `create(ThroughputPointSchema)` to create a new message.
  */
 export const ThroughputPointSchema: GenMessage<ThroughputPoint> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 6);
+  messageDesc(file_netwatch_v1_dashboard, 11);
 
 /**
  * @generated from message netwatch.v1.WatchLatencyRequest
@@ -231,7 +415,7 @@ export type WatchLatencyRequest = Message<"netwatch.v1.WatchLatencyRequest"> & {
  * Use `create(WatchLatencyRequestSchema)` to create a new message.
  */
 export const WatchLatencyRequestSchema: GenMessage<WatchLatencyRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 7);
+  messageDesc(file_netwatch_v1_dashboard, 12);
 
 /**
  * @generated from message netwatch.v1.WatchLatencyResponse
@@ -248,7 +432,7 @@ export type WatchLatencyResponse = Message<"netwatch.v1.WatchLatencyResponse"> &
  * Use `create(WatchLatencyResponseSchema)` to create a new message.
  */
 export const WatchLatencyResponseSchema: GenMessage<WatchLatencyResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 8);
+  messageDesc(file_netwatch_v1_dashboard, 13);
 
 /**
  * @generated from message netwatch.v1.LatencyPoint
@@ -287,7 +471,7 @@ export type LatencyPoint = Message<"netwatch.v1.LatencyPoint"> & {
  * Use `create(LatencyPointSchema)` to create a new message.
  */
 export const LatencyPointSchema: GenMessage<LatencyPoint> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 9);
+  messageDesc(file_netwatch_v1_dashboard, 14);
 
 /**
  * @generated from message netwatch.v1.ListAgentsRequest
@@ -300,7 +484,7 @@ export type ListAgentsRequest = Message<"netwatch.v1.ListAgentsRequest"> & {
  * Use `create(ListAgentsRequestSchema)` to create a new message.
  */
 export const ListAgentsRequestSchema: GenMessage<ListAgentsRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 10);
+  messageDesc(file_netwatch_v1_dashboard, 15);
 
 /**
  * @generated from message netwatch.v1.ListAgentsResponse
@@ -317,7 +501,7 @@ export type ListAgentsResponse = Message<"netwatch.v1.ListAgentsResponse"> & {
  * Use `create(ListAgentsResponseSchema)` to create a new message.
  */
 export const ListAgentsResponseSchema: GenMessage<ListAgentsResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 11);
+  messageDesc(file_netwatch_v1_dashboard, 16);
 
 /**
  * @generated from message netwatch.v1.Agent
@@ -376,7 +560,7 @@ export type Agent = Message<"netwatch.v1.Agent"> & {
  * Use `create(AgentSchema)` to create a new message.
  */
 export const AgentSchema: GenMessage<Agent> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 12);
+  messageDesc(file_netwatch_v1_dashboard, 17);
 
 /**
  * Where a lag incident came from.
@@ -519,6 +703,26 @@ export const DashboardService: GenService<{
     methodKind: "unary";
     input: typeof ListIncidentsRequestSchema;
     output: typeof ListIncidentsResponseSchema;
+  },
+  /**
+   * Every device ever seen on the LAN, online ones first.
+   *
+   * @generated from rpc netwatch.v1.DashboardService.ListDevices
+   */
+  listDevices: {
+    methodKind: "unary";
+    input: typeof ListDevicesRequestSchema;
+    output: typeof ListDevicesResponseSchema;
+  },
+  /**
+   * Give a device a friendly name, e.g. "Xbox". Empty clears it.
+   *
+   * @generated from rpc netwatch.v1.DashboardService.SetDeviceNickname
+   */
+  setDeviceNickname: {
+    methodKind: "unary";
+    input: typeof SetDeviceNicknameRequestSchema;
+    output: typeof SetDeviceNicknameResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_netwatch_v1_dashboard, 0);

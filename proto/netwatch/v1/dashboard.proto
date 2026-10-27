@@ -17,7 +17,55 @@ service DashboardService {
   rpc WatchThroughput(WatchThroughputRequest) returns (stream WatchThroughputResponse);
   // Lag incidents still going or that ended within `since`, newest first.
   rpc ListIncidents(ListIncidentsRequest) returns (ListIncidentsResponse);
+  // Every device ever seen on the LAN, online ones first.
+  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+  // Give a device a friendly name, e.g. "Xbox". Empty clears it.
+  rpc SetDeviceNickname(SetDeviceNicknameRequest) returns (SetDeviceNicknameResponse);
 }
+
+message ListDevicesRequest {}
+
+message ListDevicesResponse {
+  repeated LanDevice devices = 1;
+}
+
+message LanDevice {
+  string mac = 1;
+  string ip = 2;
+  // Maker looked up from the MAC. Empty when unknown or the MAC is private.
+  string vendor = 3;
+  // The device made up its MAC for privacy (phones, tablets, laptops), so
+  // its maker can't be known.
+  bool private_mac = 4;
+  // Name the router knows it by (from DHCP).
+  string hostname = 5;
+  string nickname = 6;
+  google.protobuf.Timestamp first_seen = 7;
+  google.protobuf.Timestamp last_seen = 8;
+  // Seen in the last sweep or two.
+  bool online = 9;
+  // Has ever answered a ping. Many phones and consoles don't.
+  bool answers_ping = 10;
+  // LAN round trip over the last 10 minutes, if it answers pings: a fast,
+  // steady number means good Wi-Fi (or a cable).
+  double ping_avg_ms = 11;
+  double ping_jitter_ms = 12;
+  double ping_loss = 13; // 0..1
+  int32 pings = 14;
+  // Set when this device runs the agent.
+  string agent_id = 15;
+  // The machine running the hub.
+  bool is_hub = 16;
+  // The default gateway: your router.
+  bool is_router = 17;
+}
+
+message SetDeviceNicknameRequest {
+  string mac = 1;
+  string nickname = 2;
+}
+
+message SetDeviceNicknameResponse {}
 
 message ListIncidentsRequest {
   google.protobuf.Duration since = 1;

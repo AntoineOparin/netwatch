@@ -45,6 +45,12 @@ const (
 	// DashboardServiceListIncidentsProcedure is the fully-qualified name of the DashboardService's
 	// ListIncidents RPC.
 	DashboardServiceListIncidentsProcedure = "/netwatch.v1.DashboardService/ListIncidents"
+	// DashboardServiceListDevicesProcedure is the fully-qualified name of the DashboardService's
+	// ListDevices RPC.
+	DashboardServiceListDevicesProcedure = "/netwatch.v1.DashboardService/ListDevices"
+	// DashboardServiceSetDeviceNicknameProcedure is the fully-qualified name of the DashboardService's
+	// SetDeviceNickname RPC.
+	DashboardServiceSetDeviceNicknameProcedure = "/netwatch.v1.DashboardService/SetDeviceNickname"
 )
 
 // DashboardServiceClient is a client for the netwatch.v1.DashboardService service.
@@ -57,6 +63,10 @@ type DashboardServiceClient interface {
 	WatchThroughput(context.Context, *connect.Request[v1.WatchThroughputRequest]) (*connect.ServerStreamForClient[v1.WatchThroughputResponse], error)
 	// Lag incidents still going or that ended within `since`, newest first.
 	ListIncidents(context.Context, *connect.Request[v1.ListIncidentsRequest]) (*connect.Response[v1.ListIncidentsResponse], error)
+	// Every device ever seen on the LAN, online ones first.
+	ListDevices(context.Context, *connect.Request[v1.ListDevicesRequest]) (*connect.Response[v1.ListDevicesResponse], error)
+	// Give a device a friendly name, e.g. "Xbox". Empty clears it.
+	SetDeviceNickname(context.Context, *connect.Request[v1.SetDeviceNicknameRequest]) (*connect.Response[v1.SetDeviceNicknameResponse], error)
 }
 
 // NewDashboardServiceClient constructs a client for the netwatch.v1.DashboardService service. By
@@ -94,15 +104,29 @@ func NewDashboardServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(dashboardServiceMethods.ByName("ListIncidents")),
 			connect.WithClientOptions(opts...),
 		),
+		listDevices: connect.NewClient[v1.ListDevicesRequest, v1.ListDevicesResponse](
+			httpClient,
+			baseURL+DashboardServiceListDevicesProcedure,
+			connect.WithSchema(dashboardServiceMethods.ByName("ListDevices")),
+			connect.WithClientOptions(opts...),
+		),
+		setDeviceNickname: connect.NewClient[v1.SetDeviceNicknameRequest, v1.SetDeviceNicknameResponse](
+			httpClient,
+			baseURL+DashboardServiceSetDeviceNicknameProcedure,
+			connect.WithSchema(dashboardServiceMethods.ByName("SetDeviceNickname")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // dashboardServiceClient implements DashboardServiceClient.
 type dashboardServiceClient struct {
-	listAgents      *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
-	watchLatency    *connect.Client[v1.WatchLatencyRequest, v1.WatchLatencyResponse]
-	watchThroughput *connect.Client[v1.WatchThroughputRequest, v1.WatchThroughputResponse]
-	listIncidents   *connect.Client[v1.ListIncidentsRequest, v1.ListIncidentsResponse]
+	listAgents        *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
+	watchLatency      *connect.Client[v1.WatchLatencyRequest, v1.WatchLatencyResponse]
+	watchThroughput   *connect.Client[v1.WatchThroughputRequest, v1.WatchThroughputResponse]
+	listIncidents     *connect.Client[v1.ListIncidentsRequest, v1.ListIncidentsResponse]
+	listDevices       *connect.Client[v1.ListDevicesRequest, v1.ListDevicesResponse]
+	setDeviceNickname *connect.Client[v1.SetDeviceNicknameRequest, v1.SetDeviceNicknameResponse]
 }
 
 // ListAgents calls netwatch.v1.DashboardService.ListAgents.
@@ -125,6 +149,16 @@ func (c *dashboardServiceClient) ListIncidents(ctx context.Context, req *connect
 	return c.listIncidents.CallUnary(ctx, req)
 }
 
+// ListDevices calls netwatch.v1.DashboardService.ListDevices.
+func (c *dashboardServiceClient) ListDevices(ctx context.Context, req *connect.Request[v1.ListDevicesRequest]) (*connect.Response[v1.ListDevicesResponse], error) {
+	return c.listDevices.CallUnary(ctx, req)
+}
+
+// SetDeviceNickname calls netwatch.v1.DashboardService.SetDeviceNickname.
+func (c *dashboardServiceClient) SetDeviceNickname(ctx context.Context, req *connect.Request[v1.SetDeviceNicknameRequest]) (*connect.Response[v1.SetDeviceNicknameResponse], error) {
+	return c.setDeviceNickname.CallUnary(ctx, req)
+}
+
 // DashboardServiceHandler is an implementation of the netwatch.v1.DashboardService service.
 type DashboardServiceHandler interface {
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
@@ -135,6 +169,10 @@ type DashboardServiceHandler interface {
 	WatchThroughput(context.Context, *connect.Request[v1.WatchThroughputRequest], *connect.ServerStream[v1.WatchThroughputResponse]) error
 	// Lag incidents still going or that ended within `since`, newest first.
 	ListIncidents(context.Context, *connect.Request[v1.ListIncidentsRequest]) (*connect.Response[v1.ListIncidentsResponse], error)
+	// Every device ever seen on the LAN, online ones first.
+	ListDevices(context.Context, *connect.Request[v1.ListDevicesRequest]) (*connect.Response[v1.ListDevicesResponse], error)
+	// Give a device a friendly name, e.g. "Xbox". Empty clears it.
+	SetDeviceNickname(context.Context, *connect.Request[v1.SetDeviceNicknameRequest]) (*connect.Response[v1.SetDeviceNicknameResponse], error)
 }
 
 // NewDashboardServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -168,6 +206,18 @@ func NewDashboardServiceHandler(svc DashboardServiceHandler, opts ...connect.Han
 		connect.WithSchema(dashboardServiceMethods.ByName("ListIncidents")),
 		connect.WithHandlerOptions(opts...),
 	)
+	dashboardServiceListDevicesHandler := connect.NewUnaryHandler(
+		DashboardServiceListDevicesProcedure,
+		svc.ListDevices,
+		connect.WithSchema(dashboardServiceMethods.ByName("ListDevices")),
+		connect.WithHandlerOptions(opts...),
+	)
+	dashboardServiceSetDeviceNicknameHandler := connect.NewUnaryHandler(
+		DashboardServiceSetDeviceNicknameProcedure,
+		svc.SetDeviceNickname,
+		connect.WithSchema(dashboardServiceMethods.ByName("SetDeviceNickname")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/netwatch.v1.DashboardService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DashboardServiceListAgentsProcedure:
@@ -178,6 +228,10 @@ func NewDashboardServiceHandler(svc DashboardServiceHandler, opts ...connect.Han
 			dashboardServiceWatchThroughputHandler.ServeHTTP(w, r)
 		case DashboardServiceListIncidentsProcedure:
 			dashboardServiceListIncidentsHandler.ServeHTTP(w, r)
+		case DashboardServiceListDevicesProcedure:
+			dashboardServiceListDevicesHandler.ServeHTTP(w, r)
+		case DashboardServiceSetDeviceNicknameProcedure:
+			dashboardServiceSetDeviceNicknameHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -201,4 +255,12 @@ func (UnimplementedDashboardServiceHandler) WatchThroughput(context.Context, *co
 
 func (UnimplementedDashboardServiceHandler) ListIncidents(context.Context, *connect.Request[v1.ListIncidentsRequest]) (*connect.Response[v1.ListIncidentsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.ListIncidents is not implemented"))
+}
+
+func (UnimplementedDashboardServiceHandler) ListDevices(context.Context, *connect.Request[v1.ListDevicesRequest]) (*connect.Response[v1.ListDevicesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.ListDevices is not implemented"))
+}
+
+func (UnimplementedDashboardServiceHandler) SetDeviceNickname(context.Context, *connect.Request[v1.SetDeviceNicknameRequest]) (*connect.Response[v1.SetDeviceNicknameResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.DashboardService.SetDeviceNickname is not implemented"))
 }

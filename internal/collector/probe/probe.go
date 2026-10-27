@@ -20,6 +20,7 @@ import (
 	"github.com/jackpal/gateway"
 
 	"github.com/AntoineOparin/netwatch/internal/collector"
+	"github.com/AntoineOparin/netwatch/internal/icmp"
 )
 
 const (
@@ -81,7 +82,7 @@ func (p *Probe) Run(ctx context.Context, out chan<- collector.Sample) error {
 
 // ping runs one target's loop on its own socket.
 func (p *Probe) ping(ctx context.Context, t target, out chan<- collector.Sample) error {
-	pg, err := newPinger(p.cfg.Privileged)
+	pg, err := icmp.NewPinger(p.cfg.Privileged)
 	if err != nil {
 		return err
 	}
@@ -93,11 +94,11 @@ func (p *Probe) ping(ctx context.Context, t target, out chan<- collector.Sample)
 	for seq := 0; ; seq = (seq + 1) & 0xffff {
 		at := time.Now()
 		value := math.NaN()
-		r, err := pg.send(t.ip, 64, seq, p.cfg.Timeout)
+		r, err := pg.Send(t.ip, 64, seq, p.cfg.Timeout)
 		switch {
-		case err == nil && !r.timeExceeded:
-			value = float64(r.rtt.Microseconds()) / 1000
-		case err == nil, errors.Is(err, errTimeout):
+		case err == nil && !r.TimeExceeded:
+			value = float64(r.RTT.Microseconds()) / 1000
+		case err == nil, errors.Is(err, icmp.ErrTimeout):
 			// lost
 		default:
 			return fmt.Errorf("ping %s: %w", t.name, err)
@@ -161,27 +162,27 @@ func (p *Probe) resolveTargets() ([]target, error) {
 // the TTL, and the one that drops it to zero answers "time exceeded", which
 // reveals its address. Some routers stay silent, so try a few TTLs.
 func (p *Probe) findISPHop(dst, gw net.IP) (net.IP, error) {
-	pg, err := newPinger(p.cfg.Privileged)
+	pg, err := icmp.NewPinger(p.cfg.Privileged)
 	if err != nil {
 		return nil, err
 	}
 	defer pg.Close()
 
 	for ttl := 2; ttl <= 5; ttl++ {
-		r, err := pg.send(dst, ttl, ttl, p.cfg.Timeout)
-		if errors.Is(err, errTimeout) {
+		r, err := pg.Send(dst, ttl, ttl, p.cfg.Timeout)
+		if errors.Is(err, icmp.ErrTimeout) {
 			continue
 		}
 		if err != nil {
 			return nil, err
 		}
-		if r.from.Equal(gw) {
+		if r.From.Equal(gw) {
 			continue
 		}
-		if !r.timeExceeded {
+		if !r.TimeExceeded {
 			return nil, errors.New("reached the internet target directly; no hop in between")
 		}
-		return r.from, nil
+		return r.From, nil
 	}
 	return nil, errors.New("no router answered at TTL 2-5")
 }

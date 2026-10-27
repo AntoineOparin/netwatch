@@ -15,7 +15,9 @@ import (
 	"time"
 
 	"github.com/AntoineOparin/netwatch/internal/collector"
+	"github.com/AntoineOparin/netwatch/internal/collector/discovery"
 	"github.com/AntoineOparin/netwatch/internal/collector/probe"
+	"github.com/AntoineOparin/netwatch/internal/devices"
 	"github.com/AntoineOparin/netwatch/internal/hub"
 	"github.com/AntoineOparin/netwatch/internal/incident"
 	"github.com/AntoineOparin/netwatch/internal/series"
@@ -30,6 +32,7 @@ func main() {
 	probeGateway := flag.String("probe-gateway", "", "router IP to ping (default: detected)")
 	probeISP := flag.String("probe-isp", "", `first ISP hop to ping (default: detected, "off" to skip)`)
 	lagRise := flag.Float64("lag-rise", incident.DefaultConfig().MinRiseMS, "how many ms above normal internet ping counts as lag")
+	sweepEvery := flag.Duration("sweep-every", time.Minute, `how often to look for devices on the LAN ("0" turns discovery off)`)
 	probePrivileged := flag.Bool("probe-privileged", false, "use raw ICMP sockets (needs root/CAP_NET_RAW; for Linux without ping_group_range)")
 	flag.Parse()
 
@@ -50,6 +53,12 @@ func main() {
 		log.Error("open incidents", "err", err)
 		os.Exit(1)
 	}
+	devs, err := devices.OpenStore(store.DB())
+	if err != nil {
+		log.Error("open devices", "err", err)
+		os.Exit(1)
+	}
+
 	detectorConfig := incident.DefaultConfig()
 	detectorConfig.MinRiseMS = *lagRise
 	go hub.RunDetector(ctx, store, incident.NewDetector(detectorConfig), incidents, log)
@@ -59,7 +68,7 @@ func main() {
 			log.Error("store sample", "err", err)
 		}
 	}
-	go collector.RunAll(ctx, log, sink,
+	collectors := []collector.Collector{
 		probe.New(probe.Config{
 			Internet:   *probeInternet,
 			Gateway:    *probeGateway,
@@ -69,9 +78,25 @@ func main() {
 			Privileged: *probePrivileged,
 			Logger:     log.With("collector", "probe"),
 		}),
-	)
+	}
+	if *sweepEvery > 0 {
+		collectors = append(collectors, discovery.New(discovery.Config{
+			SweepEvery: *sweepEvery,
+			PingEvery:  5 * time.Second,
+			Privileged: *probePrivileged,
+		}, devs))
+	}
+	go collector.RunAll(ctx, log, sink, collectors...)
 
-	server := hub.NewServer(hub.NewRegistry(), store, incidents, *reportInterval, log)
+	server := hub.NewServer(hub.Config{
+		Registry:           hub.NewRegistry(),
+		Store:              store,
+		Incidents:          incidents,
+		Devices:            devs,
+		ReportInterval:     *reportInterval,
+		DeviceOnlineWindow: 3 * *sweepEvery,
+		Log:                log,
+	})
 	srv := &http.Server{
 		Addr:              *addr,
 		Handler:           server.Handler(webui.Handler()),

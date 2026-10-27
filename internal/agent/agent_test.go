@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/AntoineOparin/netwatch/internal/collector"
+	"github.com/AntoineOparin/netwatch/internal/devices"
 	"github.com/AntoineOparin/netwatch/internal/hub"
 	"github.com/AntoineOparin/netwatch/internal/incident"
 	"github.com/AntoineOparin/netwatch/internal/series"
@@ -48,12 +49,23 @@ func TestReportsSurviveHubRestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	devs, err := devices.OpenStore(store.DB())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	var registry atomic.Pointer[hub.Registry]
 	newHub := func() http.Handler {
 		reg := hub.NewRegistry()
 		registry.Store(reg)
-		return hub.NewServer(reg, store, incidents, 20*time.Millisecond, quiet).Handler(http.NotFoundHandler())
+		return hub.NewServer(hub.Config{
+			Registry:       reg,
+			Store:          store,
+			Incidents:      incidents,
+			Devices:        devs,
+			ReportInterval: 20 * time.Millisecond,
+			Log:            quiet,
+		}).Handler(http.NotFoundHandler())
 	}
 	var handler atomic.Pointer[http.Handler]
 	h := newHub()

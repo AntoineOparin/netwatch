@@ -50,6 +50,8 @@ The hub pings your router, the first ISP hop and 1.1.1.1. Both are detected auto
 
 Lag means internet ping more than 30 ms above its normal (median) level; change that with `-lag-rise`.
 
+Every minute the hub also sweeps the local network for devices (ARP), names them through the router's DNS, and pings the ones that answer every 5 s. Change the interval with `-sweep-every`, or turn it off with `-sweep-every 0`.
+
 Other targets: `make test`, `make check` (tests + vet + lint + typecheck), `make gen` (after editing `proto/`), `make cross` (agent builds for every OS).
 
 ## Roadmap
@@ -58,7 +60,7 @@ Other targets: `make test`, `make check` (tests + vet + lint + typecheck), `make
 - [x] **M2 Lag probe**: RTT, jitter and loss to the gateway, the ISP and 1.1.1.1 (tells Wi-Fi problems apart from internet problems)
 - [x] **M3 Who's using bandwidth**: per-computer upload/download, stored as a time series
 - [x] **M4 Lag explainer**: when latency spikes, show whose traffic spiked at the same moment
-- [ ] **M5 Every device on the LAN**: ARP/mDNS discovery, vendor lookup, the Xbox's own LAN ping
+- [x] **M5 Every device on the LAN**: ARP/mDNS discovery, vendor lookup, the Xbox's own LAN ping
 - [ ] **M6 Per-process breakdown**: answers which app is uploading
 - [ ] **M7 Whole-LAN bytes (Raspberry Pi)**: real per-device traffic for consoles, phones and TVs
 
@@ -68,7 +70,7 @@ A normal computer on a home network only sees its own packets. My ISP router (a 
 
 - Agents measure the computers directly.
 - The hub measures *lag* directly.
-- Consoles, phones and TVs are discovered and pinged, but their byte counts aren't measured.
+- Consoles, phones and TVs are discovered (M5) and pinged, but their byte counts aren't measured.
 
 The data sources sit behind a pluggable collector interface, so a Pi-based capture source can be added later without touching storage or the UI.
 

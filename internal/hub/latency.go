@@ -23,7 +23,7 @@ func (s *Server) WatchLatency(
 	req *connect.Request[netwatchv1.WatchLatencyRequest],
 	stream *connect.ServerStream[netwatchv1.WatchLatencyResponse],
 ) error {
-	return watch(ctx, s.store, []string{probe.MetricRTT}, req.Msg.GetHistory().AsDuration(),
+	return watch(ctx, s.cfg.Store, []string{probe.MetricRTT}, req.Msg.GetHistory().AsDuration(),
 		latencyPoint,
 		func(points []*netwatchv1.LatencyPoint) error {
 			return stream.Send(&netwatchv1.WatchLatencyResponse{Points: points})

@@ -1,4 +1,4 @@
-package probe
+package icmp
 
 import (
 	"net"
@@ -30,17 +30,26 @@ func TestQuotedEchoSeq(t *testing.T) {
 // TestPingLoopback sends a real ping to 127.0.0.1. It needs unprivileged
 // ICMP (macOS, or Linux with ping_group_range), so it skips elsewhere.
 func TestPingLoopback(t *testing.T) {
-	pg, err := newPinger(false)
+	pg, err := NewPinger(false)
 	if err != nil {
 		t.Skipf("unprivileged ICMP unavailable: %v", err)
 	}
 	defer pg.Close()
 
-	r, err := pg.send(net.IPv4(127, 0, 0, 1), 64, 7, time.Second)
+	r, err := pg.Send(net.IPv4(127, 0, 0, 1), 64, 7, time.Second)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if r.timeExceeded || !r.from.Equal(net.IPv4(127, 0, 0, 1)) || r.rtt <= 0 {
+	if r.TimeExceeded || !r.From.Equal(net.IPv4(127, 0, 0, 1)) || r.RTT <= 0 {
 		t.Fatalf("unexpected reply %+v", r)
+	}
+
+	// 192.0.2.0/24 is reserved for documentation: nothing ever answers.
+	got, err := pg.Sweep([]net.IP{net.IPv4(127, 0, 0, 1), net.IPv4(192, 0, 2, 1)}, 500*time.Millisecond)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := got["127.0.0.1"]; !ok || len(got) != 1 {
+		t.Fatalf("Sweep = %v, want only 127.0.0.1", got)
 	}
 }
