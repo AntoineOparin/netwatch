@@ -10,29 +10,36 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	netwatchv1 "github.com/AntoineOparin/netwatch/gen/netwatch/v1"
 	"github.com/AntoineOparin/netwatch/gen/netwatch/v1/netwatchv1connect"
+	"github.com/AntoineOparin/netwatch/internal/collector"
 )
 
 const (
 	minBackoff = time.Second
 	maxBackoff = 30 * time.Second
 	// Used if the hub doesn't send an interval.
-	defaultHeartbeat = 5 * time.Second
+	defaultReportInterval = 2 * time.Second
+	// Samples kept while the hub is unreachable: about 10 minutes of
+	// throughput (2 samples a second), so a hub restart loses nothing.
+	maxBuffered = 1200
 )
 
 type Config struct {
-	HubURL  string
-	IDFile  string
-	Version string
-	Logger  *slog.Logger
+	HubURL     string
+	IDFile     string
+	Version    string
+	Logger     *slog.Logger
+	Collectors []collector.Collector
 	// HTTPClient defaults to http.DefaultClient.
 	HTTPClient connect.HTTPClient
 }
 
-// Run registers with the hub and sends heartbeats until ctx is cancelled.
-// It never gives up on an unreachable hub: laptops sleep, hubs restart.
+// Run registers with the hub, runs the collectors, and reports what they
+// measure until ctx is cancelled. It never gives up on an unreachable hub:
+// laptops sleep, hubs restart.
 func Run(ctx context.Context, cfg Config) error {
 	id, err := loadOrCreateID(cfg.IDFile)
 	if err != nil {
@@ -47,14 +54,16 @@ func Run(ctx context.Context, cfg Config) error {
 		log:    cfg.Logger.With("agent_id", id),
 		client: netwatchv1connect.NewAgentServiceClient(httpClient, cfg.HubURL),
 		info:   hostInfo(id, cfg.Version),
+		buf:    &buffer{max: maxBuffered},
 	}
+	go collector.RunAll(ctx, a.log, a.buf.add, cfg.Collectors...)
 
 	for {
 		interval, err := a.register(ctx)
 		if err != nil {
 			return nil // only fails once ctx is cancelled
 		}
-		a.heartbeat(ctx, interval)
+		a.report(ctx, interval)
 		if ctx.Err() != nil {
 			return nil
 		}
@@ -67,20 +76,21 @@ type agent struct {
 	log    *slog.Logger
 	client netwatchv1connect.AgentServiceClient
 	info   *netwatchv1.RegisterRequest
+	buf    *buffer
 }
 
 // register retries with exponential backoff until it succeeds or ctx ends,
-// and returns the heartbeat interval the hub asked for.
+// and returns the report interval the hub asked for.
 func (a *agent) register(ctx context.Context) (time.Duration, error) {
 	backoff := minBackoff
 	for {
 		resp, err := a.client.Register(ctx, connect.NewRequest(a.info))
 		if err == nil {
-			interval := resp.Msg.GetHeartbeatInterval().AsDuration()
+			interval := resp.Msg.GetReportInterval().AsDuration()
 			if interval <= 0 {
-				interval = defaultHeartbeat
+				interval = defaultReportInterval
 			}
-			a.log.Info("registered with hub", "heartbeat_interval", interval)
+			a.log.Info("registered with hub", "report_interval", interval)
 			return interval, nil
 		}
 		a.log.Warn("register failed, retrying", "err", err, "retry_in", backoff)
@@ -93,28 +103,50 @@ func (a *agent) register(ctx context.Context) (time.Duration, error) {
 	}
 }
 
-// heartbeat ticks until ctx ends or the hub answers NOT_FOUND. Other errors
-// (hub down, network blip) are logged and the ticking continues.
-func (a *agent) heartbeat(ctx context.Context, interval time.Duration) {
+// report sends buffered samples every interval, until ctx ends or the hub
+// answers NOT_FOUND. A report counts as a heartbeat even when it's empty.
+// When a report fails, its samples go back in the buffer for the next try.
+func (a *agent) report(ctx context.Context, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	req := &netwatchv1.HeartbeatRequest{AgentId: a.id}
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
 		}
-		_, err := a.client.Heartbeat(ctx, connect.NewRequest(req))
+		samples := a.buf.take()
+		req := &netwatchv1.ReportRequest{
+			AgentId: a.id,
+			Samples: toProto(samples),
+			SentAt:  timestamppb.Now(),
+		}
+		_, err := a.client.Report(ctx, connect.NewRequest(req))
+		if err == nil {
+			continue
+		}
+		a.buf.putBack(samples)
 		switch {
-		case err == nil:
 		case connect.CodeOf(err) == connect.CodeNotFound:
 			return
 		case errors.Is(err, context.Canceled):
 			return
 		default:
-			a.log.Warn("heartbeat failed", "err", err)
+			a.log.Warn("report failed", "err", err, "buffered", a.buf.len())
 		}
 	}
+}
+
+func toProto(samples []collector.Sample) []*netwatchv1.Sample {
+	out := make([]*netwatchv1.Sample, len(samples))
+	for i, s := range samples {
+		out[i] = &netwatchv1.Sample{
+			Metric: s.Metric,
+			Labels: s.Labels,
+			At:     timestamppb.New(s.At),
+			Value:  s.Value,
+		}
+	}
+	return out
 }

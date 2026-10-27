@@ -1,29 +1,35 @@
+import { useState } from "react";
 import { Link } from "react-router";
+import { WINDOWS, WindowPicker } from "~/components/window-picker";
 import { LatencyPanel } from "~/features/latency/latency-panel";
+import { ThroughputPanel } from "~/features/throughput/throughput-panel";
 import { dashboard, usePolling } from "~/lib/api";
 import type { Route } from "./+types/overview";
 
 export async function clientLoader() {
   const { agents } = await dashboard().listAgents({});
-  return {
-    total: agents.length,
-    online: agents.filter((a) => a.online).length,
-  };
+  return { agents };
 }
 
 export default function Overview({ loaderData }: Route.ComponentProps) {
   usePolling(5000);
-  const { total, online } = loaderData;
+  const [windowMs, setWindowMs] = useState(WINDOWS[1].ms);
+  const { agents } = loaderData;
+  const online = agents.filter((a) => a.online).length;
+  const hostnames = Object.fromEntries(agents.map((a) => [a.id, a.hostname]));
 
   return (
     <main className="space-y-8">
-      <LatencyPanel />
+      <WindowPicker value={windowMs} onChange={setWindowMs} />
+      <LatencyPanel windowMs={windowMs} />
+      <ThroughputPanel windowMs={windowMs} hostnames={hostnames} />
+
       <div className="grid gap-4 sm:grid-cols-2">
         <section className="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
           <h2 className="text-sm font-medium text-gray-500">Agents online</h2>
           <p className="mt-2 text-4xl font-semibold tabular-nums">
             {online}
-            <span className="text-xl text-gray-400"> / {total}</span>
+            <span className="text-xl text-gray-400"> / {agents.length}</span>
           </p>
           <Link
             to="/devices"
@@ -33,7 +39,7 @@ export default function Overview({ loaderData }: Route.ComponentProps) {
           </Link>
         </section>
 
-        {total === 0 && (
+        {agents.length === 0 && (
           <section className="rounded-xl border border-dashed border-gray-300 p-5 text-sm dark:border-gray-700">
             <h2 className="font-medium">No agents yet</h2>
             <p className="mt-2 text-gray-500">

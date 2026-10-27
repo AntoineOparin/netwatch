@@ -9,3 +9,6 @@
 /internal/webui/build/*
 !/internal/webui/build/.gitkeep
 /web/build/
+
+# Hub database (default -db path)
+/netwatch.db*

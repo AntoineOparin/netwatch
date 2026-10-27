@@ -1,51 +1,55 @@
 import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import type uPlot from "uplot";
 import "uplot/dist/uPlot.min.css";
-import {
-  type LatencyData,
-  TARGET_COLORS,
-  TARGET_LABELS,
-  TARGETS,
-  type Target,
-} from "./stats";
+
+export interface ChartPoint {
+  at: number; // epoch milliseconds
+  value: number | null; // null = measured, but no value (lost ping)
+}
+
+export interface ChartSeries {
+  key: string;
+  label: string;
+  color: string; // CSS color or var(--x)
+  points: ChartPoint[];
+}
 
 interface Props {
-  data: LatencyData;
+  series: ChartSeries[];
   windowMs: number;
+  formatValue: (v: number) => string;
+  // The y axis always reaches at least this high, so a quiet minute doesn't
+  // blow tiny wiggles up to full height.
+  yFloor: number;
+  // Draw a red tick along the bottom wherever a point has no value.
+  markMissing?: boolean;
+  height?: number;
 }
 
-// uPlot wants column arrays sharing one x axis, so samples are bucketed to
-// the second they were taken in. Lost pings become gaps in the line plus a
-// red tick along the bottom.
+// uPlot wants column arrays sharing one x axis, so points are bucketed to the
+// second they were taken in. Missing values become gaps in the line.
 interface Aligned {
-  targets: Target[];
   columns: uPlot.AlignedData;
-  lost: number[]; // x positions (seconds) with at least one lost ping
+  missing: number[]; // x positions (seconds) where any series had no value
 }
 
-function align(data: LatencyData): Aligned {
-  const targets = TARGETS.filter((t) => data[t]?.samples.length);
+function align(series: ChartSeries[]): Aligned {
   const seconds = new Set<number>();
-  const byTarget = new Map<Target, Map<number, number | null>>();
-  const lost = new Set<number>();
-  for (const t of targets) {
+  const missing = new Set<number>();
+  const byKey = series.map((s) => {
     const values = new Map<number, number | null>();
-    for (const s of data[t]?.samples ?? []) {
-      const sec = Math.floor(s.at / 1000);
+    for (const p of s.points) {
+      const sec = Math.floor(p.at / 1000);
       seconds.add(sec);
-      values.set(sec, s.rtt);
-      if (s.rtt === null) lost.add(sec);
+      values.set(sec, p.value);
+      if (p.value === null) missing.add(sec);
     }
-    byTarget.set(t, values);
-  }
+    return values;
+  });
   const xs = [...seconds].sort((a, b) => a - b);
   return {
-    targets,
-    columns: [
-      xs,
-      ...targets.map((t) => xs.map((x) => byTarget.get(t)?.get(x) ?? null)),
-    ],
-    lost: [...lost],
+    columns: [xs, ...byKey.map((v) => xs.map((x) => v.get(x) ?? null))],
+    missing: [...missing],
   };
 }
 
@@ -70,19 +74,24 @@ function cssVar(value: string) {
     : value;
 }
 
-const HEIGHT = 260;
-
-export function LatencyChart({ data, windowMs }: Props) {
+export function TimeSeriesChart({
+  series,
+  windowMs,
+  formatValue,
+  yFloor,
+  markMissing = false,
+  height = 240,
+}: Props) {
   const container = useRef<HTMLDivElement>(null);
   const plot = useRef<uPlot | null>(null);
-  const aligned = useMemo(() => align(data), [data]);
-  const latest = useRef(aligned);
-  latest.current = aligned;
+  const aligned = useMemo(() => align(series), [series]);
+  const latest = useRef({ aligned, series, formatValue });
+  latest.current = { aligned, series, formatValue };
   const scheme = useColorScheme();
-  // Rebuild the plot when the set of series changes (e.g. ISP hop appears).
-  const seriesKey = aligned.targets.join(",");
+  // Rebuild the plot when the set of series changes (an agent appears).
+  const seriesKey = series.map((s) => `${s.key}:${s.color}`).join(",");
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: scheme and seriesKey are rebuild triggers; the plot reads colors and series via refs.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scheme and seriesKey are rebuild triggers; the plot reads data and series via refs.
   useEffect(() => {
     const el = container.current;
     if (!el) return;
@@ -93,7 +102,6 @@ export function LatencyChart({ data, windowMs }: Props) {
     // index.html in Node.
     import("uplot").then(({ default: UPlot }) => {
       if (cancelled) return;
-      const targets = latest.current.targets;
       const axis = {
         stroke: cssVar("var(--chart-axis)"),
         grid: { stroke: cssVar("var(--chart-grid)"), width: 1 },
@@ -105,40 +113,48 @@ export function LatencyChart({ data, windowMs }: Props) {
       plot.current = new UPlot(
         {
           width: el.clientWidth,
-          height: HEIGHT,
+          height,
           legend: { show: false },
           cursor: { y: false, points: { size: 8 } },
           scales: {
             x: { time: true, range: (_u, _min, max) => [max - windowSec, max] },
-            y: { range: (_u, _min, max) => [0, Math.max(50, max * 1.15)] },
+            y: {
+              range: (_u, _min, max) => [0, Math.max(yFloor, max * 1.15)],
+            },
           },
           axes: [
             axis,
             {
               ...axis,
-              size: 56,
-              values: (_u, splits) => splits.map((v) => `${v} ms`),
+              size: 64,
+              values: (_u, splits) =>
+                splits.map((v) => latest.current.formatValue(v)),
             },
           ],
           series: [
             {},
-            ...targets.map((t) => ({
-              label: TARGET_LABELS[t],
-              stroke: cssVar(TARGET_COLORS[t]),
+            ...latest.current.series.map((s) => ({
+              label: s.label,
+              stroke: cssVar(s.color),
               width: 2,
               points: { show: false },
             })),
           ],
           hooks: {
-            draw: [(u) => drawLost(u, latest.current.lost, critical)],
+            draw: markMissing
+              ? [
+                  (u) =>
+                    drawMissing(u, latest.current.aligned.missing, critical),
+                ]
+              : [],
           },
-          plugins: [tooltipPlugin(targets)],
+          plugins: [tooltipPlugin(() => latest.current)],
         },
-        latest.current.columns,
+        latest.current.aligned.columns,
         el,
       );
       observer = new ResizeObserver(() =>
-        plot.current?.setSize({ width: el.clientWidth, height: HEIGHT }),
+        plot.current?.setSize({ width: el.clientWidth, height }),
       );
       observer.observe(el);
     });
@@ -149,7 +165,7 @@ export function LatencyChart({ data, windowMs }: Props) {
       plot.current?.destroy();
       plot.current = null;
     };
-  }, [scheme, seriesKey, windowMs]);
+  }, [scheme, seriesKey, windowMs, yFloor, markMissing, height]);
 
   useEffect(() => {
     plot.current?.setData(aligned.columns);
@@ -158,13 +174,13 @@ export function LatencyChart({ data, windowMs }: Props) {
   return <div ref={container} className="relative w-full" />;
 }
 
-function drawLost(u: uPlot, lost: number[], color: string) {
+function drawMissing(u: uPlot, missing: number[], color: string) {
   const { ctx } = u;
   const { left, top, width, height } = u.bbox;
   const tick = 8 * devicePixelRatio;
   ctx.save();
   ctx.fillStyle = color;
-  for (const sec of lost) {
+  for (const sec of missing) {
     const x = u.valToPos(sec, "x", true);
     if (x < left || x > left + width) continue;
     ctx.fillRect(
@@ -177,9 +193,14 @@ function drawLost(u: uPlot, lost: number[], color: string) {
   ctx.restore();
 }
 
-// One tooltip listing every hop at the hovered second, value first. Text is
-// set with textContent so nothing from the data is parsed as HTML.
-function tooltipPlugin(targets: Target[]): uPlot.Plugin {
+// One tooltip listing every series at the hovered second, value first. Text
+// is set with textContent so nothing from the data is parsed as HTML.
+function tooltipPlugin(
+  current: () => {
+    series: ChartSeries[];
+    formatValue: (v: number) => string;
+  },
+): uPlot.Plugin {
   let tip: HTMLDivElement;
   return {
     hooks: {
@@ -195,24 +216,25 @@ function tooltipPlugin(targets: Target[]): uPlot.Plugin {
           tip.classList.add("hidden");
           return;
         }
+        const { series, formatValue } = current();
         const time = document.createElement("div");
         time.className = "mb-1 text-gray-500";
         time.textContent = new Date(
           (u.data[0][idx] ?? 0) * 1000,
         ).toLocaleTimeString();
-        const rows = targets.map((t, i) => {
-          const v = u.data[i + 1][idx];
+        const rows = series.map((s, i) => {
+          const v = u.data[i + 1]?.[idx];
           const row = document.createElement("div");
           row.className = "flex items-center gap-2 py-0.5";
           const key = document.createElement("span");
-          key.className = "h-0.5 w-3 rounded-full";
-          key.style.background = TARGET_COLORS[t];
+          key.className = "h-0.5 w-3 shrink-0 rounded-full";
+          key.style.background = s.color;
           const value = document.createElement("span");
-          value.className = "w-14 font-semibold tabular-nums";
-          value.textContent = v == null ? "lost" : `${v.toFixed(1)} ms`;
+          value.className = "w-20 font-semibold tabular-nums";
+          value.textContent = v == null ? "—" : formatValue(v);
           const label = document.createElement("span");
           label.className = "text-gray-500";
-          label.textContent = TARGET_LABELS[t];
+          label.textContent = s.label;
           row.append(key, value, label);
           return row;
         });
@@ -220,7 +242,7 @@ function tooltipPlugin(targets: Target[]): uPlot.Plugin {
         tip.classList.remove("hidden");
         // Flip to the left of the cursor near the right edge.
         const left = u.cursor.left;
-        const flip = left > u.over.clientWidth - 180;
+        const flip = left > u.over.clientWidth - 200;
         tip.style.left = `${flip ? left - tip.offsetWidth - 12 : left + 12}px`;
         tip.style.top = "8px";
       },

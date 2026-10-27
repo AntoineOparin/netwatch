@@ -1,17 +1,74 @@
-// Package series keeps recent samples in memory, grouped into time series,
-// and fans new samples out to live subscribers (the dashboard's streams).
-// Durable storage with rollups replaces the retention window in M3.
+// Package series stores samples as time series in SQLite and fans new
+// samples out to live subscribers (the dashboard's streams).
+//
+// Tables:
+//
+//	series      one row per (device, metric, labels)
+//	samples     raw points, kept for RawRetention
+//	samples_1m  per-minute rollups, kept for MinuteRetention
+//	samples_1h  per-hour rollups, kept forever
+//
+// NaN values (lost pings) are stored as NULL. SQLite's aggregate functions
+// skip NULLs, so rollups average only real measurements and count the rest
+// in n_missing.
 package series
 
 import (
-	"maps"
-	"slices"
-	"strings"
+	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"math"
 	"sync"
 	"time"
 
+	_ "modernc.org/sqlite" // pure-Go SQLite driver, no cgo
+
 	"github.com/AntoineOparin/netwatch/internal/collector"
 )
+
+const (
+	RawRetention    = 24 * time.Hour
+	MinuteRetention = 30 * 24 * time.Hour
+
+	// Rollups are recomputed this far back each pass, so samples that arrive
+	// late (an agent catching up after the hub was unreachable) are included.
+	// Agents buffer at most 10 minutes.
+	lateWindow = 15 * time.Minute
+)
+
+const schema = `
+CREATE TABLE IF NOT EXISTS series (
+	id     INTEGER PRIMARY KEY,
+	device TEXT NOT NULL,
+	metric TEXT NOT NULL,
+	labels TEXT NOT NULL, -- JSON object, keys sorted
+	UNIQUE (device, metric, labels)
+);
+CREATE TABLE IF NOT EXISTS samples (
+	series_id INTEGER NOT NULL,
+	ts        INTEGER NOT NULL, -- unix milliseconds
+	value     REAL,             -- NULL = no value (lost ping)
+	PRIMARY KEY (series_id, ts)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS samples_ts ON samples (ts);
+`
+
+// Both rollup tables share this shape; ts is the bucket start.
+const rollupTable = `
+CREATE TABLE IF NOT EXISTS %s (
+	series_id INTEGER NOT NULL,
+	ts        INTEGER NOT NULL,
+	n         INTEGER NOT NULL, -- samples in the bucket
+	n_missing INTEGER NOT NULL, -- of which NULL
+	sum       REAL NOT NULL,
+	min       REAL,
+	max       REAL,
+	PRIMARY KEY (series_id, ts)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS %[1]s_ts ON %[1]s (ts);
+`
 
 type Point struct {
 	At    time.Time
@@ -27,39 +84,66 @@ type Series struct {
 }
 
 type Store struct {
-	retention time.Duration
+	db  *sql.DB
+	now func() time.Time
 
 	mu     sync.Mutex
-	series map[string]*Series
+	ids    map[string]int64 // series key -> series.id
 	subs   map[int]chan collector.Sample
 	nextID int
 }
 
-func NewStore(retention time.Duration) *Store {
-	return &Store{
-		retention: retention,
-		series:    map[string]*Series{},
-		subs:      map[int]chan collector.Sample{},
+func Open(path string) (*Store, error) {
+	db, err := sql.Open("sqlite", path+"?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)")
+	if err != nil {
+		return nil, err
 	}
+	// SQLite allows one writer at a time anyway, and the load here is a few
+	// samples per second, so a single connection keeps things simple.
+	db.SetMaxOpenConns(1)
+	for _, stmt := range []string{schema, fmt.Sprintf(rollupTable, "samples_1m"), fmt.Sprintf(rollupTable, "samples_1h")} {
+		if _, err := db.Exec(stmt); err != nil {
+			db.Close()
+			return nil, fmt.Errorf("create schema: %w", err)
+		}
+	}
+	return &Store{
+		db:   db,
+		now:  time.Now,
+		ids:  map[string]int64{},
+		subs: map[int]chan collector.Sample{},
+	}, nil
 }
 
-// Append stores a sample, drops points older than the retention window, and
-// passes the sample to subscribers. A subscriber that isn't keeping up misses
-// samples rather than stalling every collector.
-func (s *Store) Append(smp collector.Sample) {
+func (s *Store) Close() error { return s.db.Close() }
+
+// Append stores a sample and passes it to subscribers. Writing and
+// publishing under one lock means a subscriber that then queries history
+// sees every sample either in the history or on its channel. A subscriber
+// that isn't keeping up misses samples rather than stalling every writer.
+func (s *Store) Append(smp collector.Sample) error {
+	// Stored timestamps have millisecond precision; publish the same value
+	// so live samples and history compare equal.
+	smp.At = time.UnixMilli(smp.At.UnixMilli())
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	k := key(smp)
-	ser, ok := s.series[k]
-	if !ok {
-		ser = &Series{Device: smp.Device, Metric: smp.Metric, Labels: maps.Clone(smp.Labels)}
-		s.series[k] = ser
+	id, err := s.seriesID(smp)
+	if err != nil {
+		return err
 	}
-	ser.Points = append(ser.Points, Point{At: smp.At, Value: smp.Value})
-	cutoff := smp.At.Add(-s.retention)
-	if i := firstAtOrAfter(ser.Points, cutoff); i > 0 {
-		ser.Points = slices.Clone(ser.Points[i:])
+	var value any = smp.Value
+	if math.IsNaN(smp.Value) {
+		value = nil
+	}
+	_, err = s.db.Exec(
+		`INSERT INTO samples (series_id, ts, value) VALUES (?, ?, ?)
+		 ON CONFLICT (series_id, ts) DO UPDATE SET value = excluded.value`,
+		id, smp.At.UnixMilli(), value,
+	)
+	if err != nil {
+		return fmt.Errorf("insert sample: %w", err)
 	}
 
 	for _, ch := range s.subs {
@@ -68,30 +152,92 @@ func (s *Store) Append(smp collector.Sample) {
 		default:
 		}
 	}
+	return nil
 }
 
-// Query returns copies of every series for metric, with points at or after
-// since, sorted by series key so results are stable.
-func (s *Store) Query(metric string, since time.Time) []Series {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	keys := slices.Sorted(maps.Keys(s.series))
-	var out []Series
-	for _, k := range keys {
-		ser := s.series[k]
-		if ser.Metric != metric {
-			continue
-		}
-		out = append(out, Series{
-			Device: ser.Device,
-			Metric: ser.Metric,
-			Labels: maps.Clone(ser.Labels),
-			Points: slices.Clone(ser.Points[firstAtOrAfter(ser.Points, since):]),
-		})
+// seriesID finds or creates the series row. Callers hold s.mu.
+func (s *Store) seriesID(smp collector.Sample) (int64, error) {
+	labels := smp.Labels
+	if labels == nil {
+		labels = map[string]string{}
 	}
-	return out
+	labelJSON, err := json.Marshal(labels) // map keys are sorted
+	if err != nil {
+		return 0, err
+	}
+	key := smp.Device + "|" + smp.Metric + "|" + string(labelJSON)
+	if id, ok := s.ids[key]; ok {
+		return id, nil
+	}
+	if _, err := s.db.Exec(
+		`INSERT INTO series (device, metric, labels) VALUES (?, ?, ?) ON CONFLICT DO NOTHING`,
+		smp.Device, smp.Metric, labelJSON,
+	); err != nil {
+		return 0, fmt.Errorf("insert series: %w", err)
+	}
+	var id int64
+	if err := s.db.QueryRow(
+		`SELECT id FROM series WHERE device = ? AND metric = ? AND labels = ?`,
+		smp.Device, smp.Metric, labelJSON,
+	).Scan(&id); err != nil {
+		return 0, fmt.Errorf("find series: %w", err)
+	}
+	s.ids[key] = id
+	return id, nil
 }
+
+// Query returns every series for metric with points at or after since. The
+// further back since goes, the coarser the data: raw points within
+// RawRetention, then per-minute averages, then per-hour averages.
+func (s *Store) Query(metric string, since time.Time) ([]Series, error) {
+	value, table := "p.value", "samples"
+	switch age := s.now().Sub(since); {
+	case age > MinuteRetention:
+		value, table = rollupAvg, "samples_1h"
+	case age > RawRetention:
+		value, table = rollupAvg, "samples_1m"
+	}
+	rows, err := s.db.Query(fmt.Sprintf(
+		`SELECT s.device, s.labels, p.ts, %s
+		 FROM %s p JOIN series s ON s.id = p.series_id
+		 WHERE s.metric = ? AND p.ts >= ?
+		 ORDER BY s.device, s.labels, p.ts`, value, table),
+		metric, since.UnixMilli(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("query %s: %w", metric, err)
+	}
+	defer rows.Close()
+
+	var out []Series
+	var lastKey string
+	for rows.Next() {
+		var device, labelJSON string
+		var ts int64
+		var v sql.NullFloat64
+		if err := rows.Scan(&device, &labelJSON, &ts, &v); err != nil {
+			return nil, err
+		}
+		if key := device + "|" + labelJSON; len(out) == 0 || key != lastKey {
+			var labels map[string]string
+			if err := json.Unmarshal([]byte(labelJSON), &labels); err != nil {
+				return nil, err
+			}
+			out = append(out, Series{Device: device, Metric: metric, Labels: labels})
+			lastKey = key
+		}
+		pt := Point{At: time.UnixMilli(ts), Value: math.NaN()}
+		if v.Valid {
+			pt.Value = v.Float64
+		}
+		cur := &out[len(out)-1]
+		cur.Points = append(cur.Points, pt)
+	}
+	return out, rows.Err()
+}
+
+// Average of the real measurements in a bucket; NULL if all were missing.
+const rollupAvg = `CASE WHEN p.n > p.n_missing THEN p.sum / (p.n - p.n_missing) END`
 
 // Subscribe returns a channel of every new sample. Call the returned func to
 // unsubscribe; the channel is not closed, so stop reading at that point.
@@ -110,24 +256,70 @@ func (s *Store) Subscribe(buffer int) (<-chan collector.Sample, func()) {
 	}
 }
 
-// key identifies a series: device, metric and sorted labels.
-func key(smp collector.Sample) string {
-	var b strings.Builder
-	b.WriteString(smp.Device)
-	b.WriteByte('|')
-	b.WriteString(smp.Metric)
-	for _, k := range slices.Sorted(maps.Keys(smp.Labels)) {
-		b.WriteByte('|')
-		b.WriteString(k)
-		b.WriteByte('=')
-		b.WriteString(smp.Labels[k])
+// Maintain rolls up and expires data once a minute until ctx is cancelled.
+func (s *Store) Maintain(ctx context.Context, log *slog.Logger) {
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+	for {
+		if err := s.maintain(); err != nil {
+			log.Error("store maintenance failed", "err", err)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
 	}
-	return b.String()
 }
 
-func firstAtOrAfter(points []Point, t time.Time) int {
-	i, _ := slices.BinarySearchFunc(points, t, func(p Point, t time.Time) int {
-		return p.At.Compare(t)
-	})
-	return i
+// maintain folds finished minutes into samples_1m and finished hours into
+// samples_1h, then deletes data past its retention.
+func (s *Store) maintain() error {
+	now := s.now()
+	err := s.rollup("samples", "samples_1m", time.Minute, now,
+		`COUNT(*), SUM(value IS NULL), TOTAL(value), MIN(value), MAX(value)`)
+	if err != nil {
+		return err
+	}
+	err = s.rollup("samples_1m", "samples_1h", time.Hour, now,
+		`SUM(n), SUM(n_missing), TOTAL(sum), MIN(min), MAX(max)`)
+	if err != nil {
+		return err
+	}
+	for table, keep := range map[string]time.Duration{"samples": RawRetention, "samples_1m": MinuteRetention} {
+		if _, err := s.db.Exec(`DELETE FROM `+table+` WHERE ts < ?`, now.Add(-keep).UnixMilli()); err != nil {
+			return fmt.Errorf("expire %s: %w", table, err)
+		}
+	}
+	return nil
+}
+
+// rollup aggregates src into dst buckets of the given size, for every bucket
+// that has finished. It recomputes from a little before the newest bucket
+// already in dst, so it is idempotent and catches late samples.
+func (s *Store) rollup(src, dst string, bucket time.Duration, now time.Time, aggregates string) error {
+	var newest sql.NullInt64
+	if err := s.db.QueryRow(`SELECT MAX(ts) FROM ` + dst).Scan(&newest); err != nil {
+		return fmt.Errorf("rollup %s: %w", dst, err)
+	}
+	var from int64 // everything, the first time
+	if newest.Valid {
+		from = newest.Int64 - max(lateWindow, bucket).Milliseconds()
+	}
+	size := bucket.Milliseconds()
+	_, err := s.db.Exec(fmt.Sprintf(
+		`INSERT INTO %s (series_id, ts, n, n_missing, sum, min, max)
+		 SELECT series_id, (ts / %d) * %[2]d AS bucket, %s
+		 FROM %s WHERE ts >= ? AND ts < ?
+		 GROUP BY series_id, bucket
+		 ON CONFLICT (series_id, ts) DO UPDATE SET
+		   n = excluded.n, n_missing = excluded.n_missing,
+		   sum = excluded.sum, min = excluded.min, max = excluded.max`,
+		dst, size, aggregates, src),
+		from, now.Truncate(bucket).UnixMilli(),
+	)
+	if err != nil {
+		return fmt.Errorf("rollup %s: %w", dst, err)
+	}
+	return nil
 }

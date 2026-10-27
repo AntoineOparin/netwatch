@@ -13,6 +13,31 @@ service DashboardService {
   // Streams latency probe results: first everything within `history`, then
   // each new point as it is measured.
   rpc WatchLatency(WatchLatencyRequest) returns (stream WatchLatencyResponse);
+  // Streams each agent's internet throughput the same way.
+  rpc WatchThroughput(WatchThroughputRequest) returns (stream WatchThroughputResponse);
+}
+
+message WatchThroughputRequest {
+  google.protobuf.Duration history = 1;
+}
+
+message WatchThroughputResponse {
+  repeated ThroughputPoint points = 1;
+}
+
+enum Direction {
+  DIRECTION_UNSPECIFIED = 0;
+  DIRECTION_DOWNLOAD = 1;
+  DIRECTION_UPLOAD = 2;
+}
+
+message ThroughputPoint {
+  string agent_id = 1;
+  Direction direction = 2;
+  google.protobuf.Timestamp at = 3;
+  double bytes_per_sec = 4;
+  // Network interface measured, e.g. "en0".
+  string interface = 5;
 }
 
 message WatchLatencyRequest {

@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { LatencyChart } from "./latency-chart";
+import { TimeSeriesChart } from "~/components/time-series-chart";
 import {
   computeStats,
   type Diagnosis,
@@ -12,15 +11,9 @@ import {
 } from "./stats";
 import { useLatencyStream } from "./use-latency-stream";
 
-const WINDOWS = [
-  { label: "1 min", ms: 60_000 },
-  { label: "5 min", ms: 5 * 60_000 },
-  { label: "15 min", ms: 15 * 60_000 },
-];
 const STATS_WINDOW_MS = 60_000;
 
-export function LatencyPanel() {
-  const [windowMs, setWindowMs] = useState(WINDOWS[1].ms);
+export function LatencyPanel({ windowMs }: { windowMs: number }) {
   const { data, connected } = useLatencyStream(windowMs);
 
   const newest = Math.max(
@@ -52,31 +45,11 @@ export function LatencyPanel() {
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-sm font-medium">Round-trip time</h2>
-            <p className="text-xs text-gray-500">
-              One ping per second to each hop. Red ticks are lost pings.
-            </p>
-          </div>
-          <fieldset className="flex gap-1 rounded-lg bg-gray-100 p-0.5 text-xs dark:bg-gray-800">
-            <legend className="sr-only">Time window</legend>
-            {WINDOWS.map((w) => (
-              <button
-                key={w.ms}
-                type="button"
-                aria-pressed={w.ms === windowMs}
-                onClick={() => setWindowMs(w.ms)}
-                className={`rounded-md px-2.5 py-1 font-medium ${
-                  w.ms === windowMs
-                    ? "bg-white shadow-sm dark:bg-gray-950"
-                    : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-100"
-                }`}
-              >
-                {w.label}
-              </button>
-            ))}
-          </fieldset>
+        <div className="mb-3">
+          <h2 className="text-sm font-medium">Round-trip time</h2>
+          <p className="text-xs text-gray-500">
+            One ping per second to each hop. Red ticks are lost pings.
+          </p>
         </div>
         <ul className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
           {present.map((t) => (
@@ -89,7 +62,21 @@ export function LatencyPanel() {
             </li>
           ))}
         </ul>
-        <LatencyChart data={data} windowMs={windowMs} />
+        <TimeSeriesChart
+          series={present.map((t) => ({
+            key: t,
+            label: TARGET_LABELS[t],
+            color: TARGET_COLORS[t],
+            points: (data[t]?.samples ?? []).map((p) => ({
+              at: p.at,
+              value: p.rtt,
+            })),
+          }))}
+          windowMs={windowMs}
+          formatValue={(v) => `${Math.round(v)} ms`}
+          yFloor={50}
+          markMissing
+        />
       </div>
     </section>
   );

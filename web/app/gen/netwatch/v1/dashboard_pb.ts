@@ -12,7 +12,80 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file netwatch/v1/dashboard.proto.
  */
 export const file_netwatch_v1_dashboard: GenFile = /*@__PURE__*/
-  fileDesc("ChtuZXR3YXRjaC92MS9kYXNoYm9hcmQucHJvdG8SC25ldHdhdGNoLnYxIkEKE1dhdGNoTGF0ZW5jeVJlcXVlc3QSKgoHaGlzdG9yeRgBIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbiJBChRXYXRjaExhdGVuY3lSZXNwb25zZRIpCgZwb2ludHMYASADKAsyGS5uZXR3YXRjaC52MS5MYXRlbmN5UG9pbnQijgEKDExhdGVuY3lQb2ludBIqCgZ0YXJnZXQYASABKA4yGi5uZXR3YXRjaC52MS5MYXRlbmN5VGFyZ2V0EgwKBGFkZHIYAiABKAkSJgoCYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBnJ0dF9tcxgEIAEoARIMCgRsb3N0GAUgASgIIhMKEUxpc3RBZ2VudHNSZXF1ZXN0IjgKEkxpc3RBZ2VudHNSZXNwb25zZRIiCgZhZ2VudHMYASADKAsyEi5uZXR3YXRjaC52MS5BZ2VudCLVAQoFQWdlbnQSCgoCaWQYASABKAkSEAoIaG9zdG5hbWUYAiABKAkSCgoCb3MYAyABKAkSDAoEYXJjaBgEIAEoCRIVCg1hZ2VudF92ZXJzaW9uGAUgASgJEgsKA2lwcxgGIAMoCRIxCg1yZWdpc3RlcmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBItCglsYXN0X3NlZW4YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBm9ubGluZRgJIAEoCCqAAQoNTGF0ZW5jeVRhcmdldBIeChpMQVRFTkNZX1RBUkdFVF9VTlNQRUNJRklFRBAAEhoKFkxBVEVOQ1lfVEFSR0VUX0dBVEVXQVkQARIWChJMQVRFTkNZX1RBUkdFVF9JU1AQAhIbChdMQVRFTkNZX1RBUkdFVF9JTlRFUk5FVBADMrgBChBEYXNoYm9hcmRTZXJ2aWNlEk0KCkxpc3RBZ2VudHMSHi5uZXR3YXRjaC52MS5MaXN0QWdlbnRzUmVxdWVzdBofLm5ldHdhdGNoLnYxLkxpc3RBZ2VudHNSZXNwb25zZRJVCgxXYXRjaExhdGVuY3kSIC5uZXR3YXRjaC52MS5XYXRjaExhdGVuY3lSZXF1ZXN0GiEubmV0d2F0Y2gudjEuV2F0Y2hMYXRlbmN5UmVzcG9uc2UwAUI+WjxnaXRodWIuY29tL0FudG9pbmVPcGFyaW4vbmV0d2F0Y2gvZ2VuL25ldHdhdGNoL3YxO25ldHdhdGNodjFiBnByb3RvMw", [file_google_protobuf_duration, file_google_protobuf_timestamp]);
+  fileDesc("ChtuZXR3YXRjaC92MS9kYXNoYm9hcmQucHJvdG8SC25ldHdhdGNoLnYxIkQKFldhdGNoVGhyb3VnaHB1dFJlcXVlc3QSKgoHaGlzdG9yeRgBIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbiJHChdXYXRjaFRocm91Z2hwdXRSZXNwb25zZRIsCgZwb2ludHMYASADKAsyHC5uZXR3YXRjaC52MS5UaHJvdWdocHV0UG9pbnQioAEKD1Rocm91Z2hwdXRQb2ludBIQCghhZ2VudF9pZBgBIAEoCRIpCglkaXJlY3Rpb24YAiABKA4yFi5uZXR3YXRjaC52MS5EaXJlY3Rpb24SJgoCYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhUKDWJ5dGVzX3Blcl9zZWMYBCABKAESEQoJaW50ZXJmYWNlGAUgASgJIkEKE1dhdGNoTGF0ZW5jeVJlcXVlc3QSKgoHaGlzdG9yeRgBIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbiJBChRXYXRjaExhdGVuY3lSZXNwb25zZRIpCgZwb2ludHMYASADKAsyGS5uZXR3YXRjaC52MS5MYXRlbmN5UG9pbnQijgEKDExhdGVuY3lQb2ludBIqCgZ0YXJnZXQYASABKA4yGi5uZXR3YXRjaC52MS5MYXRlbmN5VGFyZ2V0EgwKBGFkZHIYAiABKAkSJgoCYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBnJ0dF9tcxgEIAEoARIMCgRsb3N0GAUgASgIIhMKEUxpc3RBZ2VudHNSZXF1ZXN0IjgKEkxpc3RBZ2VudHNSZXNwb25zZRIiCgZhZ2VudHMYASADKAsyEi5uZXR3YXRjaC52MS5BZ2VudCLVAQoFQWdlbnQSCgoCaWQYASABKAkSEAoIaG9zdG5hbWUYAiABKAkSCgoCb3MYAyABKAkSDAoEYXJjaBgEIAEoCRIVCg1hZ2VudF92ZXJzaW9uGAUgASgJEgsKA2lwcxgGIAMoCRIxCg1yZWdpc3RlcmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBItCglsYXN0X3NlZW4YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBm9ubGluZRgJIAEoCCpUCglEaXJlY3Rpb24SGQoVRElSRUNUSU9OX1VOU1BFQ0lGSUVEEAASFgoSRElSRUNUSU9OX0RPV05MT0FEEAESFAoQRElSRUNUSU9OX1VQTE9BRBACKoABCg1MYXRlbmN5VGFyZ2V0Eh4KGkxBVEVOQ1lfVEFSR0VUX1VOU1BFQ0lGSUVEEAASGgoWTEFURU5DWV9UQVJHRVRfR0FURVdBWRABEhYKEkxBVEVOQ1lfVEFSR0VUX0lTUBACEhsKF0xBVEVOQ1lfVEFSR0VUX0lOVEVSTkVUEAMymAIKEERhc2hib2FyZFNlcnZpY2USTQoKTGlzdEFnZW50cxIeLm5ldHdhdGNoLnYxLkxpc3RBZ2VudHNSZXF1ZXN0Gh8ubmV0d2F0Y2gudjEuTGlzdEFnZW50c1Jlc3BvbnNlElUKDFdhdGNoTGF0ZW5jeRIgLm5ldHdhdGNoLnYxLldhdGNoTGF0ZW5jeVJlcXVlc3QaIS5uZXR3YXRjaC52MS5XYXRjaExhdGVuY3lSZXNwb25zZTABEl4KD1dhdGNoVGhyb3VnaHB1dBIjLm5ldHdhdGNoLnYxLldhdGNoVGhyb3VnaHB1dFJlcXVlc3QaJC5uZXR3YXRjaC52MS5XYXRjaFRocm91Z2hwdXRSZXNwb25zZTABQj5aPGdpdGh1Yi5jb20vQW50b2luZU9wYXJpbi9uZXR3YXRjaC9nZW4vbmV0d2F0Y2gvdjE7bmV0d2F0Y2h2MWIGcHJvdG8z", [file_google_protobuf_duration, file_google_protobuf_timestamp]);
+
+/**
+ * @generated from message netwatch.v1.WatchThroughputRequest
+ */
+export type WatchThroughputRequest = Message<"netwatch.v1.WatchThroughputRequest"> & {
+  /**
+   * @generated from field: google.protobuf.Duration history = 1;
+   */
+  history?: Duration | undefined;
+};
+
+/**
+ * Describes the message netwatch.v1.WatchThroughputRequest.
+ * Use `create(WatchThroughputRequestSchema)` to create a new message.
+ */
+export const WatchThroughputRequestSchema: GenMessage<WatchThroughputRequest> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 0);
+
+/**
+ * @generated from message netwatch.v1.WatchThroughputResponse
+ */
+export type WatchThroughputResponse = Message<"netwatch.v1.WatchThroughputResponse"> & {
+  /**
+   * @generated from field: repeated netwatch.v1.ThroughputPoint points = 1;
+   */
+  points: ThroughputPoint[];
+};
+
+/**
+ * Describes the message netwatch.v1.WatchThroughputResponse.
+ * Use `create(WatchThroughputResponseSchema)` to create a new message.
+ */
+export const WatchThroughputResponseSchema: GenMessage<WatchThroughputResponse> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 1);
+
+/**
+ * @generated from message netwatch.v1.ThroughputPoint
+ */
+export type ThroughputPoint = Message<"netwatch.v1.ThroughputPoint"> & {
+  /**
+   * @generated from field: string agent_id = 1;
+   */
+  agentId: string;
+
+  /**
+   * @generated from field: netwatch.v1.Direction direction = 2;
+   */
+  direction: Direction;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp at = 3;
+   */
+  at?: Timestamp | undefined;
+
+  /**
+   * @generated from field: double bytes_per_sec = 4;
+   */
+  bytesPerSec: number;
+
+  /**
+   * Network interface measured, e.g. "en0".
+   *
+   * @generated from field: string interface = 5;
+   */
+  interface: string;
+};
+
+/**
+ * Describes the message netwatch.v1.ThroughputPoint.
+ * Use `create(ThroughputPointSchema)` to create a new message.
+ */
+export const ThroughputPointSchema: GenMessage<ThroughputPoint> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_dashboard, 2);
 
 /**
  * @generated from message netwatch.v1.WatchLatencyRequest
@@ -29,7 +102,7 @@ export type WatchLatencyRequest = Message<"netwatch.v1.WatchLatencyRequest"> & {
  * Use `create(WatchLatencyRequestSchema)` to create a new message.
  */
 export const WatchLatencyRequestSchema: GenMessage<WatchLatencyRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 0);
+  messageDesc(file_netwatch_v1_dashboard, 3);
 
 /**
  * @generated from message netwatch.v1.WatchLatencyResponse
@@ -46,7 +119,7 @@ export type WatchLatencyResponse = Message<"netwatch.v1.WatchLatencyResponse"> &
  * Use `create(WatchLatencyResponseSchema)` to create a new message.
  */
 export const WatchLatencyResponseSchema: GenMessage<WatchLatencyResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 1);
+  messageDesc(file_netwatch_v1_dashboard, 4);
 
 /**
  * @generated from message netwatch.v1.LatencyPoint
@@ -85,7 +158,7 @@ export type LatencyPoint = Message<"netwatch.v1.LatencyPoint"> & {
  * Use `create(LatencyPointSchema)` to create a new message.
  */
 export const LatencyPointSchema: GenMessage<LatencyPoint> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 2);
+  messageDesc(file_netwatch_v1_dashboard, 5);
 
 /**
  * @generated from message netwatch.v1.ListAgentsRequest
@@ -98,7 +171,7 @@ export type ListAgentsRequest = Message<"netwatch.v1.ListAgentsRequest"> & {
  * Use `create(ListAgentsRequestSchema)` to create a new message.
  */
 export const ListAgentsRequestSchema: GenMessage<ListAgentsRequest> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 3);
+  messageDesc(file_netwatch_v1_dashboard, 6);
 
 /**
  * @generated from message netwatch.v1.ListAgentsResponse
@@ -115,7 +188,7 @@ export type ListAgentsResponse = Message<"netwatch.v1.ListAgentsResponse"> & {
  * Use `create(ListAgentsResponseSchema)` to create a new message.
  */
 export const ListAgentsResponseSchema: GenMessage<ListAgentsResponse> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 4);
+  messageDesc(file_netwatch_v1_dashboard, 7);
 
 /**
  * @generated from message netwatch.v1.Agent
@@ -174,7 +247,33 @@ export type Agent = Message<"netwatch.v1.Agent"> & {
  * Use `create(AgentSchema)` to create a new message.
  */
 export const AgentSchema: GenMessage<Agent> = /*@__PURE__*/
-  messageDesc(file_netwatch_v1_dashboard, 5);
+  messageDesc(file_netwatch_v1_dashboard, 8);
+
+/**
+ * @generated from enum netwatch.v1.Direction
+ */
+export enum Direction {
+  /**
+   * @generated from enum value: DIRECTION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: DIRECTION_DOWNLOAD = 1;
+   */
+  DOWNLOAD = 1,
+
+  /**
+   * @generated from enum value: DIRECTION_UPLOAD = 2;
+   */
+  UPLOAD = 2,
+}
+
+/**
+ * Describes the enum netwatch.v1.Direction.
+ */
+export const DirectionSchema: GenEnum<Direction> = /*@__PURE__*/
+  enumDesc(file_netwatch_v1_dashboard, 0);
 
 /**
  * Where along the path to the internet a probe measures.
@@ -213,7 +312,7 @@ export enum LatencyTarget {
  * Describes the enum netwatch.v1.LatencyTarget.
  */
 export const LatencyTargetSchema: GenEnum<LatencyTarget> = /*@__PURE__*/
-  enumDesc(file_netwatch_v1_dashboard, 0);
+  enumDesc(file_netwatch_v1_dashboard, 1);
 
 /**
  * DashboardService is what the web UI calls on the hub.
@@ -239,6 +338,16 @@ export const DashboardService: GenService<{
     methodKind: "server_streaming";
     input: typeof WatchLatencyRequestSchema;
     output: typeof WatchLatencyResponseSchema;
+  },
+  /**
+   * Streams each agent's internet throughput the same way.
+   *
+   * @generated from rpc netwatch.v1.DashboardService.WatchThroughput
+   */
+  watchThroughput: {
+    methodKind: "server_streaming";
+    input: typeof WatchThroughputRequestSchema;
+    output: typeof WatchThroughputResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_netwatch_v1_dashboard, 0);

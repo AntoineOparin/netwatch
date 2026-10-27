@@ -35,14 +35,14 @@ const (
 const (
 	// AgentServiceRegisterProcedure is the fully-qualified name of the AgentService's Register RPC.
 	AgentServiceRegisterProcedure = "/netwatch.v1.AgentService/Register"
-	// AgentServiceHeartbeatProcedure is the fully-qualified name of the AgentService's Heartbeat RPC.
-	AgentServiceHeartbeatProcedure = "/netwatch.v1.AgentService/Heartbeat"
+	// AgentServiceReportProcedure is the fully-qualified name of the AgentService's Report RPC.
+	AgentServiceReportProcedure = "/netwatch.v1.AgentService/Report"
 )
 
 // AgentServiceClient is a client for the netwatch.v1.AgentService service.
 type AgentServiceClient interface {
 	Register(context.Context, *connect.Request[v1.RegisterRequest]) (*connect.Response[v1.RegisterResponse], error)
-	Heartbeat(context.Context, *connect.Request[v1.HeartbeatRequest]) (*connect.Response[v1.HeartbeatResponse], error)
+	Report(context.Context, *connect.Request[v1.ReportRequest]) (*connect.Response[v1.ReportResponse], error)
 }
 
 // NewAgentServiceClient constructs a client for the netwatch.v1.AgentService service. By default,
@@ -62,10 +62,10 @@ func NewAgentServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(agentServiceMethods.ByName("Register")),
 			connect.WithClientOptions(opts...),
 		),
-		heartbeat: connect.NewClient[v1.HeartbeatRequest, v1.HeartbeatResponse](
+		report: connect.NewClient[v1.ReportRequest, v1.ReportResponse](
 			httpClient,
-			baseURL+AgentServiceHeartbeatProcedure,
-			connect.WithSchema(agentServiceMethods.ByName("Heartbeat")),
+			baseURL+AgentServiceReportProcedure,
+			connect.WithSchema(agentServiceMethods.ByName("Report")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -73,8 +73,8 @@ func NewAgentServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 
 // agentServiceClient implements AgentServiceClient.
 type agentServiceClient struct {
-	register  *connect.Client[v1.RegisterRequest, v1.RegisterResponse]
-	heartbeat *connect.Client[v1.HeartbeatRequest, v1.HeartbeatResponse]
+	register *connect.Client[v1.RegisterRequest, v1.RegisterResponse]
+	report   *connect.Client[v1.ReportRequest, v1.ReportResponse]
 }
 
 // Register calls netwatch.v1.AgentService.Register.
@@ -82,15 +82,15 @@ func (c *agentServiceClient) Register(ctx context.Context, req *connect.Request[
 	return c.register.CallUnary(ctx, req)
 }
 
-// Heartbeat calls netwatch.v1.AgentService.Heartbeat.
-func (c *agentServiceClient) Heartbeat(ctx context.Context, req *connect.Request[v1.HeartbeatRequest]) (*connect.Response[v1.HeartbeatResponse], error) {
-	return c.heartbeat.CallUnary(ctx, req)
+// Report calls netwatch.v1.AgentService.Report.
+func (c *agentServiceClient) Report(ctx context.Context, req *connect.Request[v1.ReportRequest]) (*connect.Response[v1.ReportResponse], error) {
+	return c.report.CallUnary(ctx, req)
 }
 
 // AgentServiceHandler is an implementation of the netwatch.v1.AgentService service.
 type AgentServiceHandler interface {
 	Register(context.Context, *connect.Request[v1.RegisterRequest]) (*connect.Response[v1.RegisterResponse], error)
-	Heartbeat(context.Context, *connect.Request[v1.HeartbeatRequest]) (*connect.Response[v1.HeartbeatResponse], error)
+	Report(context.Context, *connect.Request[v1.ReportRequest]) (*connect.Response[v1.ReportResponse], error)
 }
 
 // NewAgentServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -106,18 +106,18 @@ func NewAgentServiceHandler(svc AgentServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(agentServiceMethods.ByName("Register")),
 		connect.WithHandlerOptions(opts...),
 	)
-	agentServiceHeartbeatHandler := connect.NewUnaryHandler(
-		AgentServiceHeartbeatProcedure,
-		svc.Heartbeat,
-		connect.WithSchema(agentServiceMethods.ByName("Heartbeat")),
+	agentServiceReportHandler := connect.NewUnaryHandler(
+		AgentServiceReportProcedure,
+		svc.Report,
+		connect.WithSchema(agentServiceMethods.ByName("Report")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/netwatch.v1.AgentService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AgentServiceRegisterProcedure:
 			agentServiceRegisterHandler.ServeHTTP(w, r)
-		case AgentServiceHeartbeatProcedure:
-			agentServiceHeartbeatHandler.ServeHTTP(w, r)
+		case AgentServiceReportProcedure:
+			agentServiceReportHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -131,6 +131,6 @@ func (UnimplementedAgentServiceHandler) Register(context.Context, *connect.Reque
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.AgentService.Register is not implemented"))
 }
 
-func (UnimplementedAgentServiceHandler) Heartbeat(context.Context, *connect.Request[v1.HeartbeatRequest]) (*connect.Response[v1.HeartbeatResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.AgentService.Heartbeat is not implemented"))
+func (UnimplementedAgentServiceHandler) Report(context.Context, *connect.Request[v1.ReportRequest]) (*connect.Response[v1.ReportResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("netwatch.v1.AgentService.Report is not implemented"))
 }

@@ -4,15 +4,15 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Duration } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_duration } from "@bufbuild/protobuf/wkt";
+import type { Duration, Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_duration, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file netwatch/v1/agent.proto.
  */
 export const file_netwatch_v1_agent: GenFile = /*@__PURE__*/
-  fileDesc("ChduZXR3YXRjaC92MS9hZ2VudC5wcm90bxILbmV0d2F0Y2gudjEicwoPUmVnaXN0ZXJSZXF1ZXN0EhAKCGFnZW50X2lkGAEgASgJEhAKCGhvc3RuYW1lGAIgASgJEgoKAm9zGAMgASgJEgwKBGFyY2gYBCABKAkSFQoNYWdlbnRfdmVyc2lvbhgFIAEoCRILCgNpcHMYBiADKAkiSQoQUmVnaXN0ZXJSZXNwb25zZRI1ChJoZWFydGJlYXRfaW50ZXJ2YWwYASABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24iJAoQSGVhcnRiZWF0UmVxdWVzdBIQCghhZ2VudF9pZBgBIAEoCSITChFIZWFydGJlYXRSZXNwb25zZTKjAQoMQWdlbnRTZXJ2aWNlEkcKCFJlZ2lzdGVyEhwubmV0d2F0Y2gudjEuUmVnaXN0ZXJSZXF1ZXN0Gh0ubmV0d2F0Y2gudjEuUmVnaXN0ZXJSZXNwb25zZRJKCglIZWFydGJlYXQSHS5uZXR3YXRjaC52MS5IZWFydGJlYXRSZXF1ZXN0Gh4ubmV0d2F0Y2gudjEuSGVhcnRiZWF0UmVzcG9uc2VCPlo8Z2l0aHViLmNvbS9BbnRvaW5lT3BhcmluL25ldHdhdGNoL2dlbi9uZXR3YXRjaC92MTtuZXR3YXRjaHYxYgZwcm90bzM", [file_google_protobuf_duration]);
+  fileDesc("ChduZXR3YXRjaC92MS9hZ2VudC5wcm90bxILbmV0d2F0Y2gudjEicwoPUmVnaXN0ZXJSZXF1ZXN0EhAKCGFnZW50X2lkGAEgASgJEhAKCGhvc3RuYW1lGAIgASgJEgoKAm9zGAMgASgJEgwKBGFyY2gYBCABKAkSFQoNYWdlbnRfdmVyc2lvbhgFIAEoCRILCgNpcHMYBiADKAkiRgoQUmVnaXN0ZXJSZXNwb25zZRIyCg9yZXBvcnRfaW50ZXJ2YWwYASABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24idAoNUmVwb3J0UmVxdWVzdBIQCghhZ2VudF9pZBgBIAEoCRIkCgdzYW1wbGVzGAIgAygLMhMubmV0d2F0Y2gudjEuU2FtcGxlEisKB3NlbnRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIhAKDlJlcG9ydFJlc3BvbnNlIq8BCgZTYW1wbGUSDgoGbWV0cmljGAEgASgJEi8KBmxhYmVscxgCIAMoCzIfLm5ldHdhdGNoLnYxLlNhbXBsZS5MYWJlbHNFbnRyeRImCgJhdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFdmFsdWUYBCABKAEaLQoLTGFiZWxzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ATKaAQoMQWdlbnRTZXJ2aWNlEkcKCFJlZ2lzdGVyEhwubmV0d2F0Y2gudjEuUmVnaXN0ZXJSZXF1ZXN0Gh0ubmV0d2F0Y2gudjEuUmVnaXN0ZXJSZXNwb25zZRJBCgZSZXBvcnQSGi5uZXR3YXRjaC52MS5SZXBvcnRSZXF1ZXN0GhsubmV0d2F0Y2gudjEuUmVwb3J0UmVzcG9uc2VCPlo8Z2l0aHViLmNvbS9BbnRvaW5lT3BhcmluL25ldHdhdGNoL2dlbi9uZXR3YXRjaC92MTtuZXR3YXRjaHYxYgZwcm90bzM", [file_google_protobuf_duration, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message netwatch.v1.RegisterRequest
@@ -66,9 +66,9 @@ export const RegisterRequestSchema: GenMessage<RegisterRequest> = /*@__PURE__*/
  */
 export type RegisterResponse = Message<"netwatch.v1.RegisterResponse"> & {
   /**
-   * @generated from field: google.protobuf.Duration heartbeat_interval = 1;
+   * @generated from field: google.protobuf.Duration report_interval = 1;
    */
-  heartbeatInterval?: Duration | undefined;
+  reportInterval?: Duration | undefined;
 };
 
 /**
@@ -79,41 +79,96 @@ export const RegisterResponseSchema: GenMessage<RegisterResponse> = /*@__PURE__*
   messageDesc(file_netwatch_v1_agent, 1);
 
 /**
- * @generated from message netwatch.v1.HeartbeatRequest
+ * @generated from message netwatch.v1.ReportRequest
  */
-export type HeartbeatRequest = Message<"netwatch.v1.HeartbeatRequest"> & {
+export type ReportRequest = Message<"netwatch.v1.ReportRequest"> & {
   /**
    * @generated from field: string agent_id = 1;
    */
   agentId: string;
+
+  /**
+   * Measurements taken since the last successful report. May be empty.
+   *
+   * @generated from field: repeated netwatch.v1.Sample samples = 2;
+   */
+  samples: Sample[];
+
+  /**
+   * The agent's clock when it sent this report. The hub compares it with
+   * its own clock to correct sample timestamps for clock skew between
+   * machines, which matters when lining up events across devices.
+   *
+   * @generated from field: google.protobuf.Timestamp sent_at = 3;
+   */
+  sentAt?: Timestamp | undefined;
 };
 
 /**
- * Describes the message netwatch.v1.HeartbeatRequest.
- * Use `create(HeartbeatRequestSchema)` to create a new message.
+ * Describes the message netwatch.v1.ReportRequest.
+ * Use `create(ReportRequestSchema)` to create a new message.
  */
-export const HeartbeatRequestSchema: GenMessage<HeartbeatRequest> = /*@__PURE__*/
+export const ReportRequestSchema: GenMessage<ReportRequest> = /*@__PURE__*/
   messageDesc(file_netwatch_v1_agent, 2);
 
 /**
- * @generated from message netwatch.v1.HeartbeatResponse
+ * @generated from message netwatch.v1.ReportResponse
  */
-export type HeartbeatResponse = Message<"netwatch.v1.HeartbeatResponse"> & {
+export type ReportResponse = Message<"netwatch.v1.ReportResponse"> & {
 };
 
 /**
- * Describes the message netwatch.v1.HeartbeatResponse.
- * Use `create(HeartbeatResponseSchema)` to create a new message.
+ * Describes the message netwatch.v1.ReportResponse.
+ * Use `create(ReportResponseSchema)` to create a new message.
  */
-export const HeartbeatResponseSchema: GenMessage<HeartbeatResponse> = /*@__PURE__*/
+export const ReportResponseSchema: GenMessage<ReportResponse> = /*@__PURE__*/
   messageDesc(file_netwatch_v1_agent, 3);
+
+/**
+ * @generated from message netwatch.v1.Sample
+ */
+export type Sample = Message<"netwatch.v1.Sample"> & {
+  /**
+   * e.g. "net_rx_bytes_per_sec"
+   *
+   * @generated from field: string metric = 1;
+   */
+  metric: string;
+
+  /**
+   * @generated from field: map<string, string> labels = 2;
+   */
+  labels: { [key: string]: string };
+
+  /**
+   * Agent clock.
+   *
+   * @generated from field: google.protobuf.Timestamp at = 3;
+   */
+  at?: Timestamp | undefined;
+
+  /**
+   * NaN means "measured, but no value" (e.g. a lost ping).
+   *
+   * @generated from field: double value = 4;
+   */
+  value: number;
+};
+
+/**
+ * Describes the message netwatch.v1.Sample.
+ * Use `create(SampleSchema)` to create a new message.
+ */
+export const SampleSchema: GenMessage<Sample> = /*@__PURE__*/
+  messageDesc(file_netwatch_v1_agent, 4);
 
 /**
  * AgentService is what agents (one per computer) call on the hub.
  *
- * Lifecycle: an agent calls Register once on startup, then Heartbeat on the
- * interval the hub hands back. If the hub restarts it forgets everyone, so a
- * Heartbeat returns NOT_FOUND and the agent simply registers again.
+ * Lifecycle: an agent calls Register once on startup, then Report on the
+ * interval the hub hands back. A Report doubles as a heartbeat. If the hub
+ * restarts it forgets everyone, so Report returns NOT_FOUND and the agent
+ * simply registers again (keeping the samples it hasn't delivered yet).
  *
  * @generated from service netwatch.v1.AgentService
  */
@@ -127,12 +182,12 @@ export const AgentService: GenService<{
     output: typeof RegisterResponseSchema;
   },
   /**
-   * @generated from rpc netwatch.v1.AgentService.Heartbeat
+   * @generated from rpc netwatch.v1.AgentService.Report
    */
-  heartbeat: {
+  report: {
     methodKind: "unary";
-    input: typeof HeartbeatRequestSchema;
-    output: typeof HeartbeatResponseSchema;
+    input: typeof ReportRequestSchema;
+    output: typeof ReportResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_netwatch_v1_agent, 0);

@@ -10,8 +10,11 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/AntoineOparin/netwatch/internal/agent"
+	"github.com/AntoineOparin/netwatch/internal/collector"
+	"github.com/AntoineOparin/netwatch/internal/collector/hostnet"
 )
 
 // Set at build time: go build -ldflags "-X main.version=v0.1.0".
@@ -36,6 +39,9 @@ func main() {
 		IDFile:  *idFile,
 		Version: version,
 		Logger:  log,
+		Collectors: []collector.Collector{
+			hostnet.New(time.Second),
+		},
 	})
 	if err != nil {
 		log.Error("agent stopped", "err", err)

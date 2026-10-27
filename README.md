@@ -16,10 +16,13 @@ A small home-network monitor I'm building to answer one question: **when my Xbox
 
 ![Overview: live latency to the router, the ISP and the internet, with a verdict](docs/screenshots/m2-overview.png)
 
+![Who's using the internet: per-computer download and upload](docs/screenshots/m3-throughput.png)
+
 ## Stack
 
 - **Go**: agent and hub. Each is a single static binary that cross-compiles to macOS, Windows, Linux and Raspberry Pi.
 - **Connect RPC + protobuf**: a schema-first agent↔hub API (`proto/`). It generates both the Go server/client and the TypeScript client.
+- **SQLite** (pure Go, `modernc.org/sqlite`): time-series storage, with raw samples rolled up into per-minute and per-hour averages.
 - **React Router (SPA mode) + Tailwind**: the dashboard. It's built to static files and embedded into the hub with `go:embed`.
 
 ## Running it
@@ -30,7 +33,7 @@ Requirements: Go 1.24+ and Bun.
 cd web && bun install && cd ..
 make            # builds bin/hub (with the dashboard inside) and bin/agent
 
-./bin/hub                                   # dashboard on http://localhost:8080
+./bin/hub                                   # dashboard on http://localhost:8080, data in ./netwatch.db
 ./bin/agent -hub http://<hub-ip>:8080       # on each computer
 ```
 
@@ -49,7 +52,7 @@ Other targets: `make test`, `make check` (tests + vet + lint + typecheck), `make
 
 - [x] **M1 Skeleton**: agents register and heartbeat, the hub lists them, and the dashboard is embedded in the binary
 - [x] **M2 Lag probe**: RTT, jitter and loss to the gateway, the ISP and 1.1.1.1 (tells Wi-Fi problems apart from internet problems)
-- [ ] **M3 Who's using bandwidth**: per-computer upload/download, stored as a time series
+- [x] **M3 Who's using bandwidth**: per-computer upload/download, stored as a time series
 - [ ] **M4 Lag explainer**: when latency spikes, show whose traffic spiked at the same moment
 - [ ] **M5 Every device on the LAN**: ARP/mDNS discovery, vendor lookup, the Xbox's own LAN ping
 - [ ] **M6 Per-process breakdown**: answers which app is uploading

@@ -11,19 +11,44 @@ import (
 	"testing"
 	"time"
 
+	"github.com/AntoineOparin/netwatch/internal/collector"
 	"github.com/AntoineOparin/netwatch/internal/hub"
 	"github.com/AntoineOparin/netwatch/internal/series"
 )
 
-// TestReRegisterAfterHubRestart runs a real hub in-process, then swaps it for
+var quiet = slog.New(slog.NewTextHandler(io.Discard, nil))
+
+// counter emits an increasing value every few milliseconds.
+type counter struct{}
+
+func (counter) Name() string { return "counter" }
+
+func (counter) Run(ctx context.Context, out chan<- collector.Sample) error {
+	for i := 0; ; i++ {
+		select {
+		case out <- collector.Sample{Metric: "count", Value: float64(i), At: time.Now()}:
+		case <-ctx.Done():
+			return nil
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+}
+
+// TestReportsSurviveHubRestart runs a real hub in-process, then swaps it for
 // a fresh one (an empty registry, like after a restart) and checks the agent
-// finds its way back.
-func TestReRegisterAfterHubRestart(t *testing.T) {
-	var current atomic.Pointer[hub.Registry]
+// registers again and keeps delivering samples.
+func TestReportsSurviveHubRestart(t *testing.T) {
+	store, err := series.Open(filepath.Join(t.TempDir(), "hub.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+
+	var registry atomic.Pointer[hub.Registry]
 	newHub := func() http.Handler {
 		reg := hub.NewRegistry()
-		current.Store(reg)
-		return hub.NewServer(reg, series.NewStore(time.Minute), 20*time.Millisecond).Handler(http.NotFoundHandler())
+		registry.Store(reg)
+		return hub.NewServer(reg, store, 20*time.Millisecond, quiet).Handler(http.NotFoundHandler())
 	}
 	var handler atomic.Pointer[http.Handler]
 	h := newHub()
@@ -37,18 +62,34 @@ func TestReRegisterAfterHubRestart(t *testing.T) {
 	done := make(chan error, 1)
 	go func() {
 		done <- Run(ctx, Config{
-			HubURL:  srv.URL,
-			IDFile:  filepath.Join(t.TempDir(), "agent-id"),
-			Version: "test",
-			Logger:  slog.New(slog.NewTextHandler(io.Discard, nil)),
+			HubURL:     srv.URL,
+			IDFile:     filepath.Join(t.TempDir(), "agent-id"),
+			Version:    "test",
+			Logger:     quiet,
+			Collectors: []collector.Collector{counter{}},
 		})
 	}()
 
-	waitForAgent(t, &current)
+	waitFor(t, "first registration", func() bool { return len(registry.Load().List()) == 1 })
+	waitFor(t, "first samples", func() bool { return countStored(t, store) > 0 })
 
 	restarted := newHub() // the new registry has never heard of the agent
 	handler.Store(&restarted)
-	waitForAgent(t, &current)
+	waitFor(t, "registration after restart", func() bool { return len(registry.Load().List()) == 1 })
+
+	before := countStored(t, store)
+	waitFor(t, "samples after restart", func() bool { return countStored(t, store) > before })
+
+	got, err := store.Query("count", time.Now().Add(-time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Every sample the collector produced up to the newest stored one made
+	// it, including those taken while the agent was re-registering.
+	points := got[0].Points
+	if last := points[len(points)-1].Value; int(last)+1 != len(points) {
+		t.Errorf("stored %d samples but the newest is #%v: some were lost", len(points), last)
+	}
 
 	cancel()
 	if err := <-done; err != nil {
@@ -56,19 +97,28 @@ func TestReRegisterAfterHubRestart(t *testing.T) {
 	}
 }
 
-func waitForAgent(t *testing.T, reg *atomic.Pointer[hub.Registry]) {
+func countStored(t *testing.T, store *series.Store) int {
 	t.Helper()
-	deadline := time.Now().Add(2 * time.Second)
+	got, err := store.Query("count", time.Now().Add(-time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) == 0 {
+		return 0
+	}
+	return len(got[0].Points)
+}
+
+func waitFor(t *testing.T, what string, cond func() bool) {
+	t.Helper()
+	deadline := time.Now().Add(3 * time.Second)
 	for time.Now().Before(deadline) {
-		if agents := reg.Load().List(); len(agents) == 1 {
-			if agents[0].AgentVersion != "test" {
-				t.Fatalf("registered version = %q, want test", agents[0].AgentVersion)
-			}
+		if cond() {
 			return
 		}
 		time.Sleep(5 * time.Millisecond)
 	}
-	t.Fatal("agent did not register in time")
+	t.Fatalf("timed out waiting for %s", what)
 }
 
 func TestLoadOrCreateIDIsStable(t *testing.T) {
@@ -83,5 +133,19 @@ func TestLoadOrCreateIDIsStable(t *testing.T) {
 	}
 	if first == "" || first != second {
 		t.Fatalf("ids = %q, %q, want the same non-empty id", first, second)
+	}
+}
+
+func TestBufferDropsOldest(t *testing.T) {
+	b := &buffer{max: 3}
+	for i := range 4 {
+		b.add(collector.Sample{Value: float64(i)})
+	}
+	taken := b.take() // 1, 2, 3
+	b.add(collector.Sample{Value: 4})
+	b.putBack(taken) // 1, 2, 3, 4 -> over max, 1 dropped
+	got := b.take()
+	if len(got) != 3 || got[0].Value != 2 || got[2].Value != 4 {
+		t.Fatalf("got %v, want values 2, 3, 4", got)
 	}
 }

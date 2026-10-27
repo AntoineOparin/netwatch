@@ -5,6 +5,8 @@ package hub
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -14,20 +16,29 @@ import (
 
 	netwatchv1 "github.com/AntoineOparin/netwatch/gen/netwatch/v1"
 	"github.com/AntoineOparin/netwatch/gen/netwatch/v1/netwatchv1connect"
+	"github.com/AntoineOparin/netwatch/internal/collector"
 	"github.com/AntoineOparin/netwatch/internal/series"
 )
 
-// An agent counts as offline after missing this many heartbeats.
-const missedHeartbeats = 3
+const (
+	// An agent counts as offline after missing this many reports.
+	missedReports = 3
+	// Upper bound on one report: 10 minutes of buffered samples is ~1200.
+	maxReportSamples = 10_000
+	// Clock differences above this get logged; they usually mean a machine
+	// isn't syncing time.
+	skewWarning = 2 * time.Second
+)
 
 type Server struct {
-	registry          *Registry
-	store             *series.Store
-	heartbeatInterval time.Duration
+	registry       *Registry
+	store          *series.Store
+	reportInterval time.Duration
+	log            *slog.Logger
 }
 
-func NewServer(registry *Registry, store *series.Store, heartbeatInterval time.Duration) *Server {
-	return &Server{registry: registry, store: store, heartbeatInterval: heartbeatInterval}
+func NewServer(registry *Registry, store *series.Store, reportInterval time.Duration, log *slog.Logger) *Server {
+	return &Server{registry: registry, store: store, reportInterval: reportInterval, log: log}
 }
 
 // Handler mounts the Connect services and falls back to ui for every other
@@ -57,25 +68,54 @@ func (s *Server) Register(
 		IPs:          msg.GetIps(),
 	})
 	return connect.NewResponse(&netwatchv1.RegisterResponse{
-		HeartbeatInterval: durationpb.New(s.heartbeatInterval),
+		ReportInterval: durationpb.New(s.reportInterval),
 	}), nil
 }
 
-func (s *Server) Heartbeat(
+func (s *Server) Report(
 	_ context.Context,
-	req *connect.Request[netwatchv1.HeartbeatRequest],
-) (*connect.Response[netwatchv1.HeartbeatResponse], error) {
-	if !s.registry.Touch(req.Msg.GetAgentId()) {
+	req *connect.Request[netwatchv1.ReportRequest],
+) (*connect.Response[netwatchv1.ReportResponse], error) {
+	msg := req.Msg
+	id := msg.GetAgentId()
+	if !s.registry.Touch(id) {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("unknown agent, register again"))
 	}
-	return connect.NewResponse(&netwatchv1.HeartbeatResponse{}), nil
+	if n := len(msg.GetSamples()); n > maxReportSamples {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%d samples in one report, max %d", n, maxReportSamples))
+	}
+
+	// Move agent timestamps onto the hub's clock. The network delay folded
+	// into this is a few milliseconds on a LAN, far less than the drift
+	// between two machines that aren't syncing time.
+	var skew time.Duration
+	if msg.GetSentAt() != nil {
+		skew = time.Since(msg.GetSentAt().AsTime())
+		if skew > skewWarning || skew < -skewWarning {
+			s.log.Warn("agent clock is off", "agent_id", id, "skew", skew.Round(time.Millisecond))
+		}
+	}
+	for _, smp := range msg.GetSamples() {
+		err := s.store.Append(collector.Sample{
+			Source: "agent",
+			Device: id,
+			Metric: smp.GetMetric(),
+			Labels: smp.GetLabels(),
+			Value:  smp.GetValue(),
+			At:     smp.GetAt().AsTime().Add(skew),
+		})
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	}
+	return connect.NewResponse(&netwatchv1.ReportResponse{}), nil
 }
 
 func (s *Server) ListAgents(
 	context.Context,
 	*connect.Request[netwatchv1.ListAgentsRequest],
 ) (*connect.Response[netwatchv1.ListAgentsResponse], error) {
-	window := missedHeartbeats * s.heartbeatInterval
+	window := missedReports * s.reportInterval
 	infos := s.registry.List()
 	agents := make([]*netwatchv1.Agent, 0, len(infos))
 	for _, info := range infos {

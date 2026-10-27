@@ -10,6 +10,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -110,10 +111,10 @@ func (x *RegisterRequest) GetIps() []string {
 }
 
 type RegisterResponse struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	HeartbeatInterval *durationpb.Duration   `protobuf:"bytes,1,opt,name=heartbeat_interval,json=heartbeatInterval,proto3" json:"heartbeat_interval,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ReportInterval *durationpb.Duration   `protobuf:"bytes,1,opt,name=report_interval,json=reportInterval,proto3" json:"report_interval,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *RegisterResponse) Reset() {
@@ -146,34 +147,40 @@ func (*RegisterResponse) Descriptor() ([]byte, []int) {
 	return file_netwatch_v1_agent_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *RegisterResponse) GetHeartbeatInterval() *durationpb.Duration {
+func (x *RegisterResponse) GetReportInterval() *durationpb.Duration {
 	if x != nil {
-		return x.HeartbeatInterval
+		return x.ReportInterval
 	}
 	return nil
 }
 
-type HeartbeatRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+type ReportRequest struct {
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	AgentId string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	// Measurements taken since the last successful report. May be empty.
+	Samples []*Sample `protobuf:"bytes,2,rep,name=samples,proto3" json:"samples,omitempty"`
+	// The agent's clock when it sent this report. The hub compares it with
+	// its own clock to correct sample timestamps for clock skew between
+	// machines, which matters when lining up events across devices.
+	SentAt        *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=sent_at,json=sentAt,proto3" json:"sent_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *HeartbeatRequest) Reset() {
-	*x = HeartbeatRequest{}
+func (x *ReportRequest) Reset() {
+	*x = ReportRequest{}
 	mi := &file_netwatch_v1_agent_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *HeartbeatRequest) String() string {
+func (x *ReportRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*HeartbeatRequest) ProtoMessage() {}
+func (*ReportRequest) ProtoMessage() {}
 
-func (x *HeartbeatRequest) ProtoReflect() protoreflect.Message {
+func (x *ReportRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_netwatch_v1_agent_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -185,38 +192,52 @@ func (x *HeartbeatRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use HeartbeatRequest.ProtoReflect.Descriptor instead.
-func (*HeartbeatRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ReportRequest.ProtoReflect.Descriptor instead.
+func (*ReportRequest) Descriptor() ([]byte, []int) {
 	return file_netwatch_v1_agent_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *HeartbeatRequest) GetAgentId() string {
+func (x *ReportRequest) GetAgentId() string {
 	if x != nil {
 		return x.AgentId
 	}
 	return ""
 }
 
-type HeartbeatResponse struct {
+func (x *ReportRequest) GetSamples() []*Sample {
+	if x != nil {
+		return x.Samples
+	}
+	return nil
+}
+
+func (x *ReportRequest) GetSentAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.SentAt
+	}
+	return nil
+}
+
+type ReportResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *HeartbeatResponse) Reset() {
-	*x = HeartbeatResponse{}
+func (x *ReportResponse) Reset() {
+	*x = ReportResponse{}
 	mi := &file_netwatch_v1_agent_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *HeartbeatResponse) String() string {
+func (x *ReportResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*HeartbeatResponse) ProtoMessage() {}
+func (*ReportResponse) ProtoMessage() {}
 
-func (x *HeartbeatResponse) ProtoReflect() protoreflect.Message {
+func (x *ReportResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_netwatch_v1_agent_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -228,31 +249,112 @@ func (x *HeartbeatResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use HeartbeatResponse.ProtoReflect.Descriptor instead.
-func (*HeartbeatResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use ReportResponse.ProtoReflect.Descriptor instead.
+func (*ReportResponse) Descriptor() ([]byte, []int) {
 	return file_netwatch_v1_agent_proto_rawDescGZIP(), []int{3}
+}
+
+type Sample struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// e.g. "net_rx_bytes_per_sec"
+	Metric string            `protobuf:"bytes,1,opt,name=metric,proto3" json:"metric,omitempty"`
+	Labels map[string]string `protobuf:"bytes,2,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Agent clock.
+	At *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=at,proto3" json:"at,omitempty"`
+	// NaN means "measured, but no value" (e.g. a lost ping).
+	Value         float64 `protobuf:"fixed64,4,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Sample) Reset() {
+	*x = Sample{}
+	mi := &file_netwatch_v1_agent_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Sample) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Sample) ProtoMessage() {}
+
+func (x *Sample) ProtoReflect() protoreflect.Message {
+	mi := &file_netwatch_v1_agent_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Sample.ProtoReflect.Descriptor instead.
+func (*Sample) Descriptor() ([]byte, []int) {
+	return file_netwatch_v1_agent_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *Sample) GetMetric() string {
+	if x != nil {
+		return x.Metric
+	}
+	return ""
+}
+
+func (x *Sample) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *Sample) GetAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.At
+	}
+	return nil
+}
+
+func (x *Sample) GetValue() float64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
 }
 
 var File_netwatch_v1_agent_proto protoreflect.FileDescriptor
 
 const file_netwatch_v1_agent_proto_rawDesc = "" +
 	"\n" +
-	"\x17netwatch/v1/agent.proto\x12\vnetwatch.v1\x1a\x1egoogle/protobuf/duration.proto\"\xa3\x01\n" +
+	"\x17netwatch/v1/agent.proto\x12\vnetwatch.v1\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa3\x01\n" +
 	"\x0fRegisterRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x1a\n" +
 	"\bhostname\x18\x02 \x01(\tR\bhostname\x12\x0e\n" +
 	"\x02os\x18\x03 \x01(\tR\x02os\x12\x12\n" +
 	"\x04arch\x18\x04 \x01(\tR\x04arch\x12#\n" +
 	"\ragent_version\x18\x05 \x01(\tR\fagentVersion\x12\x10\n" +
-	"\x03ips\x18\x06 \x03(\tR\x03ips\"\\\n" +
-	"\x10RegisterResponse\x12H\n" +
-	"\x12heartbeat_interval\x18\x01 \x01(\v2\x19.google.protobuf.DurationR\x11heartbeatInterval\"-\n" +
-	"\x10HeartbeatRequest\x12\x19\n" +
-	"\bagent_id\x18\x01 \x01(\tR\aagentId\"\x13\n" +
-	"\x11HeartbeatResponse2\xa3\x01\n" +
+	"\x03ips\x18\x06 \x03(\tR\x03ips\"V\n" +
+	"\x10RegisterResponse\x12B\n" +
+	"\x0freport_interval\x18\x01 \x01(\v2\x19.google.protobuf.DurationR\x0ereportInterval\"\x8e\x01\n" +
+	"\rReportRequest\x12\x19\n" +
+	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12-\n" +
+	"\asamples\x18\x02 \x03(\v2\x13.netwatch.v1.SampleR\asamples\x123\n" +
+	"\asent_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x06sentAt\"\x10\n" +
+	"\x0eReportResponse\"\xd6\x01\n" +
+	"\x06Sample\x12\x16\n" +
+	"\x06metric\x18\x01 \x01(\tR\x06metric\x127\n" +
+	"\x06labels\x18\x02 \x03(\v2\x1f.netwatch.v1.Sample.LabelsEntryR\x06labels\x12*\n" +
+	"\x02at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x02at\x12\x14\n" +
+	"\x05value\x18\x04 \x01(\x01R\x05value\x1a9\n" +
+	"\vLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\x9a\x01\n" +
 	"\fAgentService\x12G\n" +
-	"\bRegister\x12\x1c.netwatch.v1.RegisterRequest\x1a\x1d.netwatch.v1.RegisterResponse\x12J\n" +
-	"\tHeartbeat\x12\x1d.netwatch.v1.HeartbeatRequest\x1a\x1e.netwatch.v1.HeartbeatResponseB>Z<github.com/AntoineOparin/netwatch/gen/netwatch/v1;netwatchv1b\x06proto3"
+	"\bRegister\x12\x1c.netwatch.v1.RegisterRequest\x1a\x1d.netwatch.v1.RegisterResponse\x12A\n" +
+	"\x06Report\x12\x1a.netwatch.v1.ReportRequest\x1a\x1b.netwatch.v1.ReportResponseB>Z<github.com/AntoineOparin/netwatch/gen/netwatch/v1;netwatchv1b\x06proto3"
 
 var (
 	file_netwatch_v1_agent_proto_rawDescOnce sync.Once
@@ -266,25 +368,32 @@ func file_netwatch_v1_agent_proto_rawDescGZIP() []byte {
 	return file_netwatch_v1_agent_proto_rawDescData
 }
 
-var file_netwatch_v1_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_netwatch_v1_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_netwatch_v1_agent_proto_goTypes = []any{
-	(*RegisterRequest)(nil),     // 0: netwatch.v1.RegisterRequest
-	(*RegisterResponse)(nil),    // 1: netwatch.v1.RegisterResponse
-	(*HeartbeatRequest)(nil),    // 2: netwatch.v1.HeartbeatRequest
-	(*HeartbeatResponse)(nil),   // 3: netwatch.v1.HeartbeatResponse
-	(*durationpb.Duration)(nil), // 4: google.protobuf.Duration
+	(*RegisterRequest)(nil),       // 0: netwatch.v1.RegisterRequest
+	(*RegisterResponse)(nil),      // 1: netwatch.v1.RegisterResponse
+	(*ReportRequest)(nil),         // 2: netwatch.v1.ReportRequest
+	(*ReportResponse)(nil),        // 3: netwatch.v1.ReportResponse
+	(*Sample)(nil),                // 4: netwatch.v1.Sample
+	nil,                           // 5: netwatch.v1.Sample.LabelsEntry
+	(*durationpb.Duration)(nil),   // 6: google.protobuf.Duration
+	(*timestamppb.Timestamp)(nil), // 7: google.protobuf.Timestamp
 }
 var file_netwatch_v1_agent_proto_depIdxs = []int32{
-	4, // 0: netwatch.v1.RegisterResponse.heartbeat_interval:type_name -> google.protobuf.Duration
-	0, // 1: netwatch.v1.AgentService.Register:input_type -> netwatch.v1.RegisterRequest
-	2, // 2: netwatch.v1.AgentService.Heartbeat:input_type -> netwatch.v1.HeartbeatRequest
-	1, // 3: netwatch.v1.AgentService.Register:output_type -> netwatch.v1.RegisterResponse
-	3, // 4: netwatch.v1.AgentService.Heartbeat:output_type -> netwatch.v1.HeartbeatResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	6, // 0: netwatch.v1.RegisterResponse.report_interval:type_name -> google.protobuf.Duration
+	4, // 1: netwatch.v1.ReportRequest.samples:type_name -> netwatch.v1.Sample
+	7, // 2: netwatch.v1.ReportRequest.sent_at:type_name -> google.protobuf.Timestamp
+	5, // 3: netwatch.v1.Sample.labels:type_name -> netwatch.v1.Sample.LabelsEntry
+	7, // 4: netwatch.v1.Sample.at:type_name -> google.protobuf.Timestamp
+	0, // 5: netwatch.v1.AgentService.Register:input_type -> netwatch.v1.RegisterRequest
+	2, // 6: netwatch.v1.AgentService.Report:input_type -> netwatch.v1.ReportRequest
+	1, // 7: netwatch.v1.AgentService.Register:output_type -> netwatch.v1.RegisterResponse
+	3, // 8: netwatch.v1.AgentService.Report:output_type -> netwatch.v1.ReportResponse
+	7, // [7:9] is the sub-list for method output_type
+	5, // [5:7] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_netwatch_v1_agent_proto_init() }
@@ -298,7 +407,7 @@ func file_netwatch_v1_agent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_netwatch_v1_agent_proto_rawDesc), len(file_netwatch_v1_agent_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

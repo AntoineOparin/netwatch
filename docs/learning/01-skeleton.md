@@ -1,5 +1,7 @@
 # M1: Skeleton
 
+> Since M3, `Report` replaces `Heartbeat`: a report carries samples and counts as a heartbeat. The recovery pattern below is unchanged.
+
 ## What got built
 
 - The agent registers with the hub, then heartbeats on an interval the hub picks.
