@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -17,6 +18,7 @@ import (
 	"github.com/AntoineOparin/netwatch/internal/collector"
 	"github.com/AntoineOparin/netwatch/internal/collector/discovery"
 	"github.com/AntoineOparin/netwatch/internal/collector/probe"
+	"github.com/AntoineOparin/netwatch/internal/detach"
 	"github.com/AntoineOparin/netwatch/internal/devices"
 	"github.com/AntoineOparin/netwatch/internal/hub"
 	"github.com/AntoineOparin/netwatch/internal/incident"
@@ -39,7 +41,19 @@ func main() {
 	forgetDevices := flag.Duration("forget-devices", 90*24*time.Hour, "forget devices not seen for this long (2160h = 90 days)")
 	sweepEvery := flag.Duration("sweep-every", time.Minute, `how often to look for devices on the LAN ("0" turns discovery off)`)
 	probePrivileged := flag.Bool("probe-privileged", false, "use raw ICMP sockets (needs root/CAP_NET_RAW; for Linux without ping_group_range)")
+	detached := flag.Bool("detach", false, "run in the background and return to the prompt (output goes to -log-file)")
+	logFile := flag.String("log-file", "netwatch-hub.log", "where -detach writes the log")
 	flag.Parse()
+
+	if *detached {
+		pid, err := detach.Start(*logFile)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "detach:", err)
+			os.Exit(1)
+		}
+		fmt.Printf("NetWatch hub running in the background (PID %d).\nLog: %s\nStop it with: %s\n", pid, *logFile, detach.StopHint(pid))
+		return
+	}
 
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

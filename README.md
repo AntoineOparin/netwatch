@@ -43,7 +43,7 @@ Then:
 ./bin/agent -hub http://<hub-ip>:8080  # on each computer you want numbers for
 ```
 
-That's it. Open the dashboard from any device on the network, phones included. **[docs/running.md](docs/running.md)** covers which file to download, Windows, starting at log-in, and the macOS and Windows "unverified developer" prompts.
+That's it. Add `--detach` to run either one in the background and get your prompt back. Open the dashboard from any device on the network, phones included. **[docs/running.md](docs/running.md)** covers which file to download, Windows, starting at log-in, and the macOS and Windows "unverified developer" prompts.
 
 ## Hub and agents
 

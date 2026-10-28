@@ -69,6 +69,17 @@ Everything lives in one SQLite file (`netwatch.db`), and every kind of data has 
 
 For a typical home (the hub, a couple of computers running the agent, a dozen devices) the file levels off at roughly 100 MB. SQLite reuses the space freed by deletions, so it doesn't keep growing.
 
+## Run in the background
+
+Add `--detach` to either program and it starts in the background and gives you your prompt back. It keeps running after you close the terminal:
+
+```sh
+./netwatch-hub --detach
+./netwatch-agent --detach -hub http://192.168.0.155:8080
+```
+
+It prints the process ID and how to stop it (`kill <PID>`, or `taskkill /PID <PID>` on Windows). Output goes to `netwatch-hub.log` / `netwatch-agent.log` in the current folder; choose another file with `-log-file`. To start it at log-in instead, see below.
+
 ## Start automatically
 
 ### macOS (hub or agent) with launchd
